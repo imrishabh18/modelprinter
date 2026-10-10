@@ -66,6 +66,10 @@ export function parseNemaMotorModelParams(raw: RawModelprinterParams) {
         : name === "nowires"
           ? "none"
           : "stubs"
+    } else if (name === "stepped" || name === "chamfered") {
+      if (value) throw new Error(`NEMA flag "${name}" does not accept a value`)
+      property = "cornerProfile"
+      parsed = name
     } else if (name === "wirecount") {
       property = "wireCount"
       if (!/^\d+$/.test(value)) throw new Error("wirecount requires an integer")

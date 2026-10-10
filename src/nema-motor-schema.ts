@@ -100,8 +100,8 @@ export const nemaMotorDimensions = {
   },
   34: {
     // Illustrative rear details; independent of the mounting flange.
-    backFaceHoleSpacing: 58,
-    rearCornerChamfer: 16,
+    backFaceHoleSpacing: 40,
+    rearCornerChamfer: 24,
     backFaceScrewSize: "M5",
     backFaceHoleDepth: 6,
     bodyWidth: 86,
@@ -166,6 +166,7 @@ const shape = {
   bodyCornerChamfer: nonnegative.optional(),
   /** Rear outline is independent of the front mounting flange. */
   rearCornerChamfer: nonnegative.optional(),
+  cornerProfile: z.enum(["chamfered", "stepped"]).optional(),
 }
 const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
   const d = nemaMotorDimensions[p.nemaSize]
@@ -174,11 +175,12 @@ const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
   return {
     nemaSize: p.nemaSize,
     wireConnection: p.wireConnection ?? "stubs",
-    wireSideAngle: (((p.wireSideAngle ?? 0) % 360) + 360) % 360,
-    wireLength: p.wireLength ?? 6,
-    wireDiameter: p.wireDiameter ?? 1.2,
+    wireSideAngle:
+      (((p.wireSideAngle ?? (p.nemaSize === 34 ? 90 : 0)) % 360) + 360) % 360,
+    wireLength: p.wireLength ?? (p.nemaSize === 34 ? 25 : 6),
+    wireDiameter: p.wireDiameter ?? (p.nemaSize === 34 ? 2 : 1.2),
     wireCount: p.wireCount ?? 4,
-    backFace: p.backFace ?? "screws",
+    backFace: p.backFace ?? (p.nemaSize === 34 ? "plain" : "screws"),
     backFaceHoleSpacing:
       p.backFaceHoleSpacing ??
       ("backFaceHoleSpacing" in d
@@ -205,6 +207,9 @@ const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
     rearCapLength: p.rearCapLength ?? d.rearCapLength,
     faceCornerChamfer: p.faceCornerChamfer ?? d.faceCornerChamfer,
     bodyCornerChamfer: p.bodyCornerChamfer ?? d.bodyCornerChamfer,
+    ...(p.nemaSize === 34 || p.cornerProfile !== undefined
+      ? { cornerProfile: p.cornerProfile ?? ("stepped" as const) }
+      : {}),
     ...("rearCornerChamfer" in d || p.rearCornerChamfer !== undefined
       ? {
           rearCornerChamfer:
@@ -224,6 +229,8 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
     (p.backFace === "plain" && p.mountingHoleThrough
       ? p.bodyCornerChamfer
       : p.faceCornerChamfer)
+  const rearEdge =
+    p.cornerProfile === "stepped" ? rearChamfer / Math.SQRT2 : rearChamfer
   if (p.backFace !== "plain") {
     const screw = hexSocketBoltDimensions[p.backFaceScrewSize]
     const radius =
@@ -234,7 +241,10 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
       issue("Rear holes and screw heads must not overlap each other")
     if (
       p.backFaceHoleSpacing + 2 * radius >= p.bodyWidth ||
-      p.bodyWidth - rearChamfer - p.backFaceHoleSpacing <= radius * Math.SQRT2
+      (p.cornerProfile === "stepped"
+        ? p.backFaceHoleSpacing + 2 * radius >= p.bodyWidth - 2 * rearEdge
+        : p.bodyWidth - rearChamfer - p.backFaceHoleSpacing <=
+          radius * Math.SQRT2)
     )
       issue("Rear holes and screw heads must fit entirely inside the rear face")
     if (p.backFaceHoleDepth >= p.rearCapLength)
@@ -243,13 +253,13 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
       issue("Rear holes must accommodate the screw diameter")
   }
   if (p.wireConnection === "stubs") {
-    if (p.wireDiameter * p.wireCount * 1.5 > p.bodyWidth - 2 * rearChamfer)
+    if (p.wireDiameter * p.wireCount * 1.5 > p.bodyWidth - 2 * rearEdge)
       issue("Wire bundle must fit on the cap side")
     if (p.wireDiameter >= p.rearCapLength)
       issue("Wire diameter must fit within the rear cap")
   }
   const connector = getJstMotorConnector(p.wireConnection)
-  if (connector && p.bodyWidth - 2 * rearChamfer < connector.bodyWidth)
+  if (connector && p.bodyWidth - 2 * rearEdge < connector.bodyWidth)
     issue("JST header must fit on the motor side")
   const r = p.mountingHoleDiameter / 2
   if (p.frontCapLength + p.rearCapLength >= p.bodyLength)
@@ -275,7 +285,13 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
     issue("Blind mounting hole depth must be less than the front cap length")
   if (
     p.mountingHoleThrough &&
-    p.bodyWidth - p.bodyCornerChamfer - p.mountingHoleSpacing >= -r * Math.SQRT2
+    (p.cornerProfile === "stepped"
+      ? p.bodyWidth / 2 -
+          p.bodyCornerChamfer / Math.SQRT2 +
+          Math.min(4, p.bodyCornerChamfer / Math.SQRT2 / 4) >=
+        p.mountingHoleSpacing / 2 - r
+      : p.bodyWidth - p.bodyCornerChamfer - p.mountingHoleSpacing >=
+        -r * Math.SQRT2)
   )
     issue("Body must clear through front mounting holes")
   if (p.shaftLength <= p.pilotLength)

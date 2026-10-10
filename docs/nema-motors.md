@@ -42,7 +42,7 @@ mp.string("nema23_shaftdiameter8mm_shaftlength25mm_flatdepth0.5mm_flatlength20mm
 Modifiers: `l` / `length` / `bodylength`, `bodywidth`, `shaftlength`,
 `shaftdiameter`, `round` / `dshaft`, `flatdepth`, `flatlength`, `flatangle`,
 `holespacing`, `holediameter`, `holedepth`, `throughholes` / `blindholes`,
-`pilotdiameter`, `pilotlength`, `frontcap`, `rearcap`, `facechamfer`, `bodychamfer`, `rearchamfer`.
+`pilotdiameter`, `pilotlength`, `frontcap`, `rearcap`, `facechamfer`, `bodychamfer`, `rearchamfer`, `stepped` / `chamfered`.
 Duplicate, unknown and geometrically invalid parameters fail validation.
 
 This package defines parameters and parses model strings; it does not generate
@@ -51,18 +51,27 @@ JSCAD solids and own the visual snapshots and geometry tests.
 
 ## Rear face
 
-The rear face is Z=-bodyLength. Bare model strings show four installed socket-head
-cap screws. `_backfaceholes` removes the screws and exposes four blind bores;
+The rear face is Z=-bodyLength. NEMA8/17/23 model strings show four installed socket-head
+cap screws; NEMA34 defaults to a plain rear casting. `_backfaceholes` removes the screws and exposes four blind bores;
 `_backfacescrews` explicitly selects installed screws. `_plainbackface` omits both.
 These flags are mutually exclusive. Direct props use `backFace: "holes" | "screws" | "plain"`.
 
 Rear fasteners are representative configurable details, not guaranteed by a NEMA
-frame number. The square rear pitches default to 16 / 31 / 47.14 / 58 mm,
+frame number. The square rear pitches default to 16 / 31 / 47.14 / 40 mm,
 independently overridden by `backFaceHoleSpacing` / `_backholespacing`.
-NEMA34 uses an illustrative inset rear screw pattern and a 16 mm rear corner
-chamfer, rather than a second mounting flange. `rearCornerChamfer` / `_rearchamfer`
-configures the rear outline independently of `faceCornerChamfer` and the body.
-These rear dimensions are not a manufacturer-specific drawing or mounting standard.
+NEMA34 follows the rounded, stepped shoulders and plain rear casting visible in
+STEPPERONLINE product photos. The rear follows the body profile instead of
+repeating the mounting flange. Front assembly screws sit in edge recesses
+separately from the mounting holes. The side wire bundle has a grommet, a 90 degree
+default exit angle, 2 mm wires, and 25 mm visible length. Threads, laminations,
+and the shaft keyway are omitted.
+
+These visual details are photo-based approximations, not manufacturing dimensions.
+`cornerProfile` (`stepped` / `chamfered`) and `rearCornerChamfer` / `rearchamfer`
+configure the profiles. In stepped mode, the chamfer value divided by sqrt(2)
+sets the corner shoulder depth, with fillets up to 4 mm. Default body and rear
+values are both 24 mm. Rear bores/screws remain opt-in with an illustrative
+40 mm square pitch and can be overridden to match a specific motor.
 NEMA8/17/23 retain their existing rear profiles. Front flange holes are unchanged.
 
 | Rear default (mm) | NEMA8 | NEMA17 | NEMA23 | NEMA34 |

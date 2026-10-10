@@ -20,8 +20,8 @@ export function assertNemaMotor(size: NemaSize) {
   expect(definition.mountingHoleSpacing).toBe(expected.pitch)
   expect(definition.mountingHoleDiameter).toBe(expected.diameter)
   const { fn, ...props } = definition
-  expect(props.backFace).toBe("screws")
-  expect(props.backFaceHoleSpacing).toBe(size === 34 ? 58 : expected.pitch)
+  expect(props.backFace).toBe(size === 34 ? "plain" : "screws")
+  expect(props.backFaceHoleSpacing).toBe(size === 34 ? 40 : expected.pitch)
   expect(props.backFaceScrewSize).toBe(
     ({ 8: "M2", 17: "M3", 23: "M4", 34: "M5" } as const)[size],
   )

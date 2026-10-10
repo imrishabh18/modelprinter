@@ -18,10 +18,40 @@ export function getNemaMotorReferencePoints(input: NemaMotorModelPropsInput) {
   const x = Math.cos(radians),
     y = Math.sin(radians)
   // Intersect the direction with the cap's chamfered square specification.
-  const radius = Math.min(
+  let radius = Math.min(
     p.bodyWidth / 2 / Math.max(Math.abs(x), Math.abs(y)),
     (p.bodyWidth - p.faceCornerChamfer) / (Math.abs(x) + Math.abs(y)),
   )
+  if (p.nemaSize === 34 && p.cornerProfile === "stepped") {
+    const h = p.bodyWidth / 2,
+      c = p.bodyCornerChamfer / Math.SQRT2,
+      r = Math.min(4, c / 4)
+    const contains = (distance: number) => {
+      const a = Math.abs(distance * x),
+        b = Math.abs(distance * y)
+      if (a > h || b > h) return false
+      if (c === 0) return true
+      if (a > h - c && b > h - c)
+        return (
+          a <= h - c + r &&
+          b <= h - c + r &&
+          Math.hypot(a - (h - c + r), b - (h - c + r)) >= r
+        )
+      if (b > h - r && a > h - c - r)
+        return Math.hypot(a - (h - c - r), b - (h - r)) <= r
+      if (a > h - r && b > h - c - r)
+        return Math.hypot(a - (h - r), b - (h - c - r)) <= r
+      return true
+    }
+    let low = 0,
+      high = p.bodyWidth
+    for (let i = 0; i < 50; i++) {
+      const mid = (low + high) / 2
+      if (contains(mid)) low = mid
+      else high = mid
+    }
+    radius = low
+  }
   const flatRadians = (p.shaftFlatAngle * Math.PI) / 180
   return {
     frontface: {
@@ -40,7 +70,10 @@ export function getNemaMotorReferencePoints(input: NemaMotorModelPropsInput) {
       position: {
         x: radius * x,
         y: radius * y,
-        z: -p.bodyLength + p.rearCapLength / 2,
+        z:
+          p.nemaSize === 34
+            ? -p.bodyLength + p.rearCapLength + 3
+            : -p.bodyLength + p.rearCapLength / 2,
       },
       direction: { x, y, z: 0 },
     },
