@@ -25,12 +25,13 @@ const lengths = {
   rearcap: "rearCapLength",
   facechamfer: "faceCornerChamfer",
   bodychamfer: "bodyCornerChamfer",
+  rearchamfer: "rearCornerChamfer",
 } as const
 
 export function parseNemaMotorModelParams(raw: RawModelprinterParams) {
   const tokens = normalizeNemaMotorModelString(raw.string).split("_")
-  const match = tokens[0]?.match(/^nema(8|17|23)$/i)
-  if (!match) throw new Error("Expected nema8, nema17 or nema23")
+  const match = tokens[0]?.match(/^nema(8|17|23|34)$/i)
+  if (!match) throw new Error("Expected nema8, nema17, nema23 or nema34")
   const props: Record<string, unknown> = {
     fn: "nema",
     nemaSize: Number(match[1]),
@@ -65,6 +66,10 @@ export function parseNemaMotorModelParams(raw: RawModelprinterParams) {
         : name === "nowires"
           ? "none"
           : "stubs"
+    } else if (name === "stepped" || name === "chamfered") {
+      if (value) throw new Error(`NEMA flag "${name}" does not accept a value`)
+      property = "cornerProfile"
+      parsed = name
     } else if (name === "wirecount") {
       property = "wireCount"
       if (!/^\d+$/.test(value)) throw new Error("wirecount requires an integer")

@@ -82,7 +82,7 @@ test("JST PH and SH variants accept canonical and legacy spellings", () => {
       }
     }
   }
-  for (const size of [8, 17, 23]) {
+  for (const size of [8, 17, 23, 34]) {
     for (const [alias, token] of [
       ["none", "nowires"],
       ["stubs", "wirestubs"],
