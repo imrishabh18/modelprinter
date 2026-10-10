@@ -57,3 +57,30 @@ test("NEMA34 accepts wire aliases and rejects unsupported frames and conflicts",
   ])
     expect(() => mp.string(source).json()).toThrow()
 })
+
+test("NEMA34 rear profile and fasteners are independent of the front flange", () => {
+  expect(mp.string("nema34").json()).toMatchObject({
+    backFaceHoleSpacing: 58,
+    rearCornerChamfer: 16,
+    mountingHoleSpacing: 69.6,
+    faceCornerChamfer: 2,
+  })
+  expect(
+    mp.string("nema34_holespacing68mm_facechamfer3mm").json(),
+  ).toMatchObject({
+    backFaceHoleSpacing: 58,
+    rearCornerChamfer: 16,
+  })
+  expect(
+    mp.string("nema34_rearchamfer1cm_backholespacing6cm").json(),
+  ).toMatchObject({
+    rearCornerChamfer: 10,
+    backFaceHoleSpacing: 60,
+  })
+  for (const source of [
+    "nema34_backholespacing69.6mm",
+    "nema34_rearchamfer24mm",
+    "nema34_plainbackface_rearchamfer43mm",
+  ])
+    expect(() => mp.string(source).json()).toThrow()
+})

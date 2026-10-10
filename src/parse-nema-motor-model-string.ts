@@ -25,6 +25,7 @@ const lengths = {
   rearcap: "rearCapLength",
   facechamfer: "faceCornerChamfer",
   bodychamfer: "bodyCornerChamfer",
+  rearchamfer: "rearCornerChamfer",
 } as const
 
 export function parseNemaMotorModelParams(raw: RawModelprinterParams) {

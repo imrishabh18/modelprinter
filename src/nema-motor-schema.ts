@@ -99,6 +99,9 @@ export const nemaMotorDimensions = {
     bodyCornerChamfer: 15,
   },
   34: {
+    // Illustrative rear details; independent of the mounting flange.
+    backFaceHoleSpacing: 58,
+    rearCornerChamfer: 16,
     backFaceScrewSize: "M5",
     backFaceHoleDepth: 6,
     bodyWidth: 86,
@@ -161,6 +164,8 @@ const shape = {
   rearCapLength: positive.optional(),
   faceCornerChamfer: nonnegative.optional(),
   bodyCornerChamfer: nonnegative.optional(),
+  /** Rear outline is independent of the front mounting flange. */
+  rearCornerChamfer: nonnegative.optional(),
 }
 const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
   const d = nemaMotorDimensions[p.nemaSize]
@@ -175,7 +180,10 @@ const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
     wireCount: p.wireCount ?? 4,
     backFace: p.backFace ?? "screws",
     backFaceHoleSpacing:
-      p.backFaceHoleSpacing ?? p.mountingHoleSpacing ?? d.mountingHoleSpacing,
+      p.backFaceHoleSpacing ??
+      ("backFaceHoleSpacing" in d
+        ? d.backFaceHoleSpacing
+        : (p.mountingHoleSpacing ?? d.mountingHoleSpacing)),
     backFaceHoleDiameter: p.backFaceHoleDiameter ?? screw.diameter,
     backFaceHoleDepth: p.backFaceHoleDepth ?? d.backFaceHoleDepth,
     backFaceScrewSize,
@@ -197,11 +205,25 @@ const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
     rearCapLength: p.rearCapLength ?? d.rearCapLength,
     faceCornerChamfer: p.faceCornerChamfer ?? d.faceCornerChamfer,
     bodyCornerChamfer: p.bodyCornerChamfer ?? d.bodyCornerChamfer,
+    ...("rearCornerChamfer" in d || p.rearCornerChamfer !== undefined
+      ? {
+          rearCornerChamfer:
+            p.rearCornerChamfer ??
+            ("rearCornerChamfer" in d
+              ? d.rearCornerChamfer
+              : (p.faceCornerChamfer ?? d.faceCornerChamfer)),
+        }
+      : {}),
   }
 }
 export type NemaMotorModelProps = ReturnType<typeof resolve>
 const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
   const issue = (message: string) => ctx.addIssue({ code: "custom", message })
+  const rearChamfer =
+    p.rearCornerChamfer ??
+    (p.backFace === "plain" && p.mountingHoleThrough
+      ? p.bodyCornerChamfer
+      : p.faceCornerChamfer)
   if (p.backFace !== "plain") {
     const screw = hexSocketBoltDimensions[p.backFaceScrewSize]
     const radius =
@@ -212,8 +234,7 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
       issue("Rear holes and screw heads must not overlap each other")
     if (
       p.backFaceHoleSpacing + 2 * radius >= p.bodyWidth ||
-      p.bodyWidth - p.faceCornerChamfer - p.backFaceHoleSpacing <=
-        radius * Math.SQRT2
+      p.bodyWidth - rearChamfer - p.backFaceHoleSpacing <= radius * Math.SQRT2
     )
       issue("Rear holes and screw heads must fit entirely inside the rear face")
     if (p.backFaceHoleDepth >= p.rearCapLength)
@@ -222,23 +243,21 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
       issue("Rear holes must accommodate the screw diameter")
   }
   if (p.wireConnection === "stubs") {
-    if (
-      p.wireDiameter * p.wireCount * 1.5 >
-      p.bodyWidth - 2 * p.faceCornerChamfer
-    )
+    if (p.wireDiameter * p.wireCount * 1.5 > p.bodyWidth - 2 * rearChamfer)
       issue("Wire bundle must fit on the cap side")
     if (p.wireDiameter >= p.rearCapLength)
       issue("Wire diameter must fit within the rear cap")
   }
   const connector = getJstMotorConnector(p.wireConnection)
-  if (connector && p.bodyWidth - 2 * p.faceCornerChamfer < connector.bodyWidth)
+  if (connector && p.bodyWidth - 2 * rearChamfer < connector.bodyWidth)
     issue("JST header must fit on the motor side")
   const r = p.mountingHoleDiameter / 2
   if (p.frontCapLength + p.rearCapLength >= p.bodyLength)
     issue("End caps must leave a positive body length")
   if (
     p.faceCornerChamfer >= p.bodyWidth / 2 ||
-    p.bodyCornerChamfer >= p.bodyWidth / 2
+    p.bodyCornerChamfer >= p.bodyWidth / 2 ||
+    rearChamfer >= p.bodyWidth / 2
   )
     issue("Chamfer must be smaller than half the body width")
   if (

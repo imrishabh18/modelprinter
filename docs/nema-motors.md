@@ -42,7 +42,7 @@ mp.string("nema23_shaftdiameter8mm_shaftlength25mm_flatdepth0.5mm_flatlength20mm
 Modifiers: `l` / `length` / `bodylength`, `bodywidth`, `shaftlength`,
 `shaftdiameter`, `round` / `dshaft`, `flatdepth`, `flatlength`, `flatangle`,
 `holespacing`, `holediameter`, `holedepth`, `throughholes` / `blindholes`,
-`pilotdiameter`, `pilotlength`, `frontcap`, `rearcap`, `facechamfer`, `bodychamfer`.
+`pilotdiameter`, `pilotlength`, `frontcap`, `rearcap`, `facechamfer`, `bodychamfer`, `rearchamfer`.
 Duplicate, unknown and geometrically invalid parameters fail validation.
 
 This package defines parameters and parses model strings; it does not generate
@@ -57,10 +57,13 @@ cap screws. `_backfaceholes` removes the screws and exposes four blind bores;
 These flags are mutually exclusive. Direct props use `backFace: "holes" | "screws" | "plain"`.
 
 Rear fasteners are representative configurable details, not guaranteed by a NEMA
-frame number. The square rear pitch defaults to the mounting pitch (16 / 31 /
-47.14 / 69.6 mm), independently overridden by `backFaceHoleSpacing` / `_backholespacing`.
-The enabled rear face uses the front-face outline so the NEMA23/NEMA34 rear fasteners
-have support outside the chamfered core. Front flange holes are unchanged.
+frame number. The square rear pitches default to 16 / 31 / 47.14 / 58 mm,
+independently overridden by `backFaceHoleSpacing` / `_backholespacing`.
+NEMA34 uses an illustrative inset rear screw pattern and a 16 mm rear corner
+chamfer, rather than a second mounting flange. `rearCornerChamfer` / `_rearchamfer`
+configures the rear outline independently of `faceCornerChamfer` and the body.
+These rear dimensions are not a manufacturer-specific drawing or mounting standard.
+NEMA8/17/23 retain their existing rear profiles. Front flange holes are unchanged.
 
 | Rear default (mm) | NEMA8 | NEMA17 | NEMA23 | NEMA34 |
 | --- | --- | --- | --- | --- |
