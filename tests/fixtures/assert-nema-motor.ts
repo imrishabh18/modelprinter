@@ -11,6 +11,7 @@ export function assertNemaMotor(size: NemaSize) {
     8: { pitch: 16, diameter: 2, length: 33, shaft: 15 },
     17: { pitch: 31, diameter: 3, length: 38, shaft: 24 },
     23: { pitch: 47.14, diameter: 5, length: 51, shaft: 20.6 },
+    34: { pitch: 69.6, diameter: 6.5, length: 80, shaft: 32 },
   }[size]
   const definition = mp.string(`NEMA${size}`).json()
   if (definition.fn !== "nema") throw new Error("Expected NEMA")
@@ -22,7 +23,7 @@ export function assertNemaMotor(size: NemaSize) {
   expect(props.backFace).toBe("screws")
   expect(props.backFaceHoleSpacing).toBe(expected.pitch)
   expect(props.backFaceScrewSize).toBe(
-    ({ 8: "M2", 17: "M3", 23: "M4" } as const)[size],
+    ({ 8: "M2", 17: "M3", 23: "M4", 34: "M5" } as const)[size],
   )
   for (const [token, mode] of [
     ["backfaceholes", "holes"],

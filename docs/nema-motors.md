@@ -1,24 +1,27 @@
 # NEMA stepper motors
 
-`mp.string("nema8").json()`, `nema17`, and `nema23` resolve to `fn: "nema"`
-and `nemaSize: 8 | 17 | 23`. Lengths are millimeters or unit-bearing strings.
+`mp.string("nema8").json()`, `nema17`, `nema23`, and `nema34` resolve to `fn: "nema"`
+and `nemaSize: 8 | 17 | 23 | 34`. Lengths are millimeters or unit-bearing strings.
 `nemaMotorModelPropsSchema` validates direct props with a required `nemaSize`.
 
-| Default | NEMA 8 | NEMA 17 | NEMA 23 |
-| --- | --- | --- | --- |
-| Body width × length | 20.3 × 33 | 42.3 × 38 | 56.4 × 51 |
-| Square hole pitch | 16 | 31 | 47.14 |
-| Hole center coordinates | (±8, ±8) | (±15.5, ±15.5) | (±23.57, ±23.57) |
-| Hole diameter / depth | 2 / 2 blind | 3 / 4.5 blind | 5 / through front flange |
-| Pilot diameter × height | 15 × 1.5 | 22 × 2 | 38.1 × 1.6 |
-| Shaft diameter × length from face | 4 × 15 | 5 × 24 | 6.35 × 20.6 |
-| Shaft shape | round | D | D |
-| D flat depth / length | 0.5 / 10 when enabled | 0.5 / 15 | 0.5 / 15 |
+| Default | NEMA 8 | NEMA 17 | NEMA 23 | NEMA 34 |
+| --- | --- | --- | --- | --- |
+| Body width × length | 20.3 × 33 | 42.3 × 38 | 56.4 × 51 | 86 × 80 |
+| Square hole pitch | 16 | 31 | 47.14 | 69.6 |
+| Hole center coordinates | (±8, ±8) | (±15.5, ±15.5) | (±23.57, ±23.57) | (±34.8, ±34.8) |
+| Hole diameter / depth | 2 / 2 blind | 3 / 4.5 blind | 5 / through front flange | 6.5 / through front flange |
+| Pilot diameter × height | 15 × 1.5 | 22 × 2 | 38.1 × 1.6 | 73 × 1.6 |
+| Shaft diameter × length from face | 4 × 15 | 5 × 24 | 6.35 × 20.6 | 14 × 32 |
+| Shaft shape | round | D | D | round (keyway omitted) |
+| D flat depth / length | 0.5 / 10 when enabled | 0.5 / 15 | 0.5 / 15 | 0.5 / 15 when enabled |
 
 Mounting, pilot and shaft dimensions follow representative Nanotec drawings:
 [SCA2018](https://www.nanotec.com/fileadmin/files/Baureihenuebersichten/Schrittmotoren/Product_Overview_SCA2018.pdf),
 [ST4118](https://www.nanotec.com/fileadmin/files/Baureihenuebersichten/Schrittmotoren/Product_Overview_ST4118.pdf),
 [ST5918](https://www.nanotec.com/fileadmin/files/Baureihenuebersichten/Schrittmotoren/Product_Overview_ST5918.pdf).
+NEMA34 envelope, mounting, pilot and shaft dimensions follow the
+[STEPPERONLINE 34HS31-6004S1 drawing](https://www.omc-stepperonline.com/download/34HS31-6004S1.pdf).
+Its keyway is omitted and the default shaft is round; `_dshaft` enables an illustrative flat.
 Frame names do not guarantee body length or shaft details. D cuts, cap lengths
 and corner chamfers are illustrative defaults; no screw threads or wires are modeled.
 
@@ -55,15 +58,15 @@ These flags are mutually exclusive. Direct props use `backFace: "holes" | "screw
 
 Rear fasteners are representative configurable details, not guaranteed by a NEMA
 frame number. The square rear pitch defaults to the mounting pitch (16 / 31 /
-47.14 mm), independently overridden by `backFaceHoleSpacing` / `_backholespacing`.
-The enabled rear face uses the front-face outline so the NEMA23 rear fasteners
+47.14 / 69.6 mm), independently overridden by `backFaceHoleSpacing` / `_backholespacing`.
+The enabled rear face uses the front-face outline so the NEMA23/NEMA34 rear fasteners
 have support outside the chamfered core. Front flange holes are unchanged.
 
-| Rear default (mm) | NEMA8 | NEMA17 | NEMA23 |
-| --- | --- | --- | --- |
-| Screw size | M2 | M3 | M4 |
-| Bore diameter / depth | 2 / 2 | 3 / 4.5 | 4 / 4.5 |
-| Head diameter / height | 3.8 / 2 | 5.5 / 3 | 7 / 4 |
+| Rear default (mm) | NEMA8 | NEMA17 | NEMA23 | NEMA34 |
+| --- | --- | --- | --- | --- |
+| Screw size | M2 | M3 | M4 | M5 |
+| Bore diameter / depth | 2 / 2 | 3 / 4.5 | 4 / 4.5 | 5 / 6 |
+| Head diameter / height | 3.8 / 2 | 5.5 / 3 | 7 / 4 | 8.5 / 5 |
 
 `backFaceScrewSize` / `_backscrewm3` selects the existing ISO 4762 bolt
 head/socket dimensions. `backFaceHoleDiameter` / `_backholediameter` and

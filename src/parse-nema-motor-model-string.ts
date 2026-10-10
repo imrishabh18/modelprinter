@@ -29,8 +29,8 @@ const lengths = {
 
 export function parseNemaMotorModelParams(raw: RawModelprinterParams) {
   const tokens = normalizeNemaMotorModelString(raw.string).split("_")
-  const match = tokens[0]?.match(/^nema(8|17|23)$/i)
-  if (!match) throw new Error("Expected nema8, nema17 or nema23")
+  const match = tokens[0]?.match(/^nema(8|17|23|34)$/i)
+  if (!match) throw new Error("Expected nema8, nema17, nema23 or nema34")
   const props: Record<string, unknown> = {
     fn: "nema",
     nemaSize: Number(match[1]),

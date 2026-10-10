@@ -16,6 +16,7 @@ export const nemaSizeSchema = z.union([
   z.literal(8),
   z.literal(17),
   z.literal(23),
+  z.literal(34),
 ])
 export type NemaSize = z.infer<typeof nemaSizeSchema>
 
@@ -24,6 +25,9 @@ export type NemaSize = z.infer<typeof nemaSizeSchema>
  * https://www.nanotec.com/fileadmin/files/Baureihenuebersichten/Schrittmotoren/Product_Overview_SCA2018.pdf
  * https://www.nanotec.com/fileadmin/files/Baureihenuebersichten/Schrittmotoren/Product_Overview_ST4118.pdf
  * https://www.nanotec.com/fileadmin/files/Baureihenuebersichten/Schrittmotoren/Product_Overview_ST5918.pdf
+ * NEMA 34 envelope, mounting/pilot and shaft: STEPPERONLINE 34HS31-6004S1:
+ * https://www.omc-stepperonline.com/download/34HS31-6004S1.pdf
+ * Its shaft keyway is omitted; the default shaft is round.
  * Cap thicknesses, chamfers and D cuts are illustrative, configurable details.
  * NEMA 8 also has 15.4 mm pitch / 16 mm pilot variants; override both together.
  */
@@ -93,6 +97,28 @@ export const nemaMotorDimensions = {
     rearCapLength: 5,
     faceCornerChamfer: 2,
     bodyCornerChamfer: 15,
+  },
+  34: {
+    backFaceScrewSize: "M5",
+    backFaceHoleDepth: 6,
+    bodyWidth: 86,
+    bodyLength: 80,
+    mountingHoleSpacing: 69.6,
+    mountingHoleDiameter: 6.5,
+    mountingHoleDepth: 10,
+    mountingHoleThrough: true,
+    pilotDiameter: 73,
+    pilotLength: 1.6,
+    shaftDiameter: 14,
+    shaftLength: 32,
+    shaftShape: "round",
+    shaftFlatDepth: 0.5,
+    shaftFlatLength: 15,
+    shaftFlatAngle: 0,
+    frontCapLength: 10,
+    rearCapLength: 8,
+    faceCornerChamfer: 2,
+    bodyCornerChamfer: 24,
   },
 } as const
 
