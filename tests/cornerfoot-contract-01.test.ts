@@ -22,7 +22,7 @@ test("cornerfoot complete strings and public dimensions agree", () => {
   expect(
     mp
       .string(
-        "cornerfoot_w25mm_d25mm_h12mm_wall3mm_seat(20mm,20mm)_hole4mm_shape(cornercup)",
+        "cornerfoot_w25mm_d25mm_h12mm_wall3mm_seat(20mm,20mm)_hole4mm_cornercup",
       )
       .json(),
   ).toEqual({ fn: "cornerfoot", ...props })

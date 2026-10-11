@@ -20,9 +20,6 @@ const lengths: Record<string, string> = {
   holediameter: "holeDiameter",
 }
 const flags: Record<string, string> = { cornercup: "cornerCup" }
-const selectors: Record<string, { value: string; property: string }> = {
-  shape: { value: "cornercup", property: "cornerCup" },
-}
 const integers: Record<string, string> = {}
 const tuples: Record<string, readonly [string, string]> = {
   seat: ["seatWidth", "seatDepth"],
@@ -44,11 +41,6 @@ export function parseCornerFootModelParams(raw: RawModelprinterParams) {
       value = match[2]!
     if (Object.hasOwn(lengths, key) && value) assign(lengths[key]!, value)
     else if (Object.hasOwn(flags, key) && !value) assign(flags[key]!, true)
-    else if (
-      Object.hasOwn(selectors, key) &&
-      value.toLowerCase() === `(${selectors[key]!.value})`
-    )
-      assign(selectors[key]!.property, true)
     else if (Object.hasOwn(integers, key) && /^\d+$/.test(value))
       assign(integers[key]!, Number(value))
     else if (Object.hasOwn(tuples, key)) {
