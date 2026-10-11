@@ -5,7 +5,7 @@ import {
   hollowShaftModelPropsSchema,
   getHollowShaftDimensions,
 } from "../src"
-const source = "hollowshaft_od20mm_id12mm_l200mm_style(roundtube)_endchamfer1mm"
+const source = "hollowshaft_od20mm_id12mm_l200mm_roundtube_endchamfer1mm"
 const props = {
   outerDiameter: 20,
   innerDiameter: 12,

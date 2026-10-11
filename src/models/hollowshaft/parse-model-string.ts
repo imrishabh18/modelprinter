@@ -13,9 +13,6 @@ const aliases: Record<string, string> = {
 const flags: Record<string, string> = {
   roundtube: "roundTube",
 }
-const literals: Record<string, readonly [string, string]> = {
-  style: ["roundtube", "roundTube"],
-}
 export function parseHollowShaftModelParams(raw: RawModelprinterParams) {
   const [name, ...tokens] = splitModelStringTokens(raw.string)
   if (raw.fn !== "hollowshaft" || name?.toLowerCase() !== "hollowshaft")
@@ -36,11 +33,6 @@ export function parseHollowShaftModelParams(raw: RawModelprinterParams) {
       if (value !== "")
         throw new Error(`hollowshaft flag "${key}" takes no value`)
       assign(flags[key]!, true)
-    } else if (Object.hasOwn(literals, key)) {
-      const [literal, property] = literals[key]!
-      if (value.toLowerCase() !== `(${literal})`)
-        throw new Error(`Expected hollowshaft ${key}(${literal})`)
-      assign(property, true)
     } else if (Object.hasOwn(aliases, key) && value) {
       const property = aliases[key]!
       assign(property, property === "pinCount" ? Number(value) : value)

@@ -1,11 +1,5 @@
 import { expect, test } from "bun:test"
-import {
-  mp,
-  modelDefinitionSchema,
-  hollowShaftModelPropsSchema,
-  getHollowShaftDimensions,
-} from "../src"
-const source = "hollowshaft_od20mm_id12mm_l200mm_style(roundtube)_endchamfer1mm"
+import { mp } from "../src"
 const props = {
   outerDiameter: 20,
   innerDiameter: 12,
@@ -13,23 +7,18 @@ const props = {
   endChamfer: 1,
   roundTube: true,
 } as const
-test("hollowshaft value-free flags reject repeated and conflicting selectors", () => {
-  expect(
-    mp
-      .string("hollowshaft_od20mm_id12mm_l200mm_endchamfer1mm_roundtube")
-      .json(),
-  ).toEqual({ fn: "hollowshaft", ...props })
-  expect(() =>
-    mp
-      .string(
-        "hollowshaft_od20mm_id12mm_l200mm_endchamfer1mm_roundtube_roundtube",
-      )
-      .json(),
-  ).toThrow()
-  expect(() =>
-    mp
-      .string("hollowshaft_od20mm_id12mm_l200mm_endchamfer1mm_roundtube(true)")
-      .json(),
-  ).toThrow()
-  expect(() => mp.string(`${source}_roundtube`).json()).toThrow()
+test("hollowshaft uses value-free flags and rejects removed selector syntax", () => {
+  const base = "hollowshaft_od20mm_id12mm_l200mm_endchamfer1mm"
+  const expected = { fn: "hollowshaft", ...props } as const
+  expect(mp.string(`${base}_roundtube`).json()).toEqual(expected)
+  expect(mp.string(base).json()).toEqual(expected)
+  for (const token of [
+    "roundtube_roundtube",
+    "roundtube(true)",
+    "style(roundtube)",
+    "STYLE(ROUNDTUBE)",
+    "style(unknown)",
+  ]) {
+    expect(() => mp.string(`${base}_${token}`).json()).toThrow()
+  }
 })
