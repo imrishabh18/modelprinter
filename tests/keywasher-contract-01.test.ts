@@ -19,7 +19,7 @@ test("keywasher complete strings and public dimensions agree", () => {
   expect(
     mp
       .string(
-        "keywasher_spec(custom)_id10mm_od20mm_h1mm_tabw3mm_tabl2mm_tabs1_tab(inward)",
+        "keywasher_custom_id10mm_od20mm_h1mm_tabw3mm_tabl2mm_tabs1_inward",
       )
       .json(),
   ).toEqual({ fn: "keywasher", ...props })
