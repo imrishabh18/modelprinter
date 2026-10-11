@@ -154,7 +154,7 @@ export function assertWormGears() {
     backlash: 0,
     clearance: 0.25,
     boreDiameter: 0,
-    handedness: "right" as const,
+    leftHanded: false,
     phase: 0,
     radialSegments: 96,
     segmentsPerTurn: 32,
@@ -173,7 +173,7 @@ export function assertWormGears() {
     fn: "wormgear",
     ...defaults,
     starts: 2,
-    handedness: "left",
+    leftHanded: true,
     boreDiameter: 3,
     backlash: 0.1,
     phase: 15,
@@ -190,7 +190,7 @@ export function assertWormGears() {
     module: 1,
     pitchDiameter: 10,
     length: 12.7,
-    handedness: "right",
+    leftHanded: false,
   })
   const d = getWormGearDimensions({
     module: "2mm",

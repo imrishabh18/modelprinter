@@ -10,9 +10,6 @@ const lengths: Record<string, string> = {
   thickness: "thickness",
 }
 const flags: Record<string, string> = { flatannulus: "flatAnnulus" }
-const selectors: Record<string, { value: string; property: string }> = {
-  profile: { value: "flatannulus", property: "flatAnnulus" },
-}
 const integers: Record<string, string> = {}
 const tuples: Record<string, readonly [string, string]> = {}
 export function parseFlatGasketModelParams(raw: RawModelprinterParams) {
@@ -32,11 +29,6 @@ export function parseFlatGasketModelParams(raw: RawModelprinterParams) {
       value = match[2]!
     if (Object.hasOwn(lengths, key) && value) assign(lengths[key]!, value)
     else if (Object.hasOwn(flags, key) && !value) assign(flags[key]!, true)
-    else if (
-      Object.hasOwn(selectors, key) &&
-      value.toLowerCase() === `(${selectors[key]!.value})`
-    )
-      assign(selectors[key]!.property, true)
     else if (Object.hasOwn(integers, key) && /^\d+$/.test(value))
       assign(integers[key]!, Number(value))
     else if (Object.hasOwn(tuples, key)) {

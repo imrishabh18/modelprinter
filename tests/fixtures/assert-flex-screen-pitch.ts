@@ -19,6 +19,12 @@ export const assertFlexScreenPitch = () => {
     padLength: 1.25,
     tailLength: 3,
     taperLength: 2,
+    sitsFlat: true,
+    sitsFlatBelowBoard: false,
+    foldedToFaceAboveBoard: false,
+    foldedToFaceBelowBoard: false,
+    foldedToRightAngleAboveBoard: false,
+    foldedToRightAngleBelowBoard: false,
   })
   expect(() =>
     flexScreenModelPropsSchema.parse({
@@ -36,7 +42,12 @@ export const assertFlexScreenPitch = () => {
     width: 16,
     height: 10,
     flexCableLength: 5,
-    orientation: "sitsFlat",
+    sitsFlat: true,
+    sitsFlatBelowBoard: false,
+    foldedToFaceAboveBoard: false,
+    foldedToFaceBelowBoard: false,
+    foldedToRightAngleAboveBoard: false,
+    foldedToRightAngleBelowBoard: false,
   })
   expect(mp.string("flexscreen_p0.02in_pincount30").json()).toMatchObject({
     pinCount: 30,
@@ -47,7 +58,17 @@ export const assertFlexScreenPitch = () => {
   )
   expect(
     mp.string("flexscreen_conductorcount30_conductorpitch0.5").json(),
-  ).toEqual({ fn: "flexscreen", conductorCount: 30, conductorPitch: 0.5 })
+  ).toEqual({
+    fn: "flexscreen",
+    conductorCount: 30,
+    conductorPitch: 0.5,
+    sitsFlat: true,
+    sitsFlatBelowBoard: false,
+    foldedToFaceAboveBoard: false,
+    foldedToFaceBelowBoard: false,
+    foldedToRightAngleAboveBoard: false,
+    foldedToRightAngleBelowBoard: false,
+  })
   expect(
     mp.string("flexscreen30_p0.5mm_pw0.3mm_pl1.25mm_tail3mm_taper2mm").json(),
   ).toEqual({
@@ -58,6 +79,12 @@ export const assertFlexScreenPitch = () => {
     padLength: 1.25,
     tailLength: 3,
     taperLength: 2,
+    sitsFlat: true,
+    sitsFlatBelowBoard: false,
+    foldedToFaceAboveBoard: false,
+    foldedToFaceBelowBoard: false,
+    foldedToRightAngleAboveBoard: false,
+    foldedToRightAngleBelowBoard: false,
   })
   expect(
     mp
@@ -71,7 +98,12 @@ export const assertFlexScreenPitch = () => {
     width: 16,
     height: 10,
     flexCableLength: 5,
-    orientation: "sitsFlat",
+    sitsFlat: true,
+    sitsFlatBelowBoard: false,
+    foldedToFaceAboveBoard: false,
+    foldedToFaceBelowBoard: false,
+    foldedToRightAngleAboveBoard: false,
+    foldedToRightAngleBelowBoard: false,
   })
   for (const definition of [
     "flexscreen0_p0.5",

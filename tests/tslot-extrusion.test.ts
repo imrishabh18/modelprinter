@@ -10,7 +10,7 @@ import {
 } from "../src"
 
 const example =
-  "tslotextrusion_w20mm_h20mm_l100mm_profile(fourtsolid)_slot6mm_pocket10mm_pocketd2mm_lip2mm_bore4mm_corner1mm"
+  "tslotextrusion_w20mm_h20mm_l100mm_fourtsolid_slot6mm_pocket10mm_pocketd2mm_lip2mm_bore4mm_corner1mm"
 
 test("T-slot extrusion roadmap example resolves every profile dimension", () => {
   const model = mp.string(example).json()
@@ -20,7 +20,7 @@ test("T-slot extrusion roadmap example resolves every profile dimension", () => 
     width: 20,
     height: 20,
     length: 100,
-    profile: "fourtsolid",
+    fourTSolid: true,
     slotWidth: 6,
     pocketWidth: 10,
     pocketDepth: 2,
@@ -104,10 +104,43 @@ test("T-slot extrusion parser rejects repeated, incomplete and unknown tokens", 
     "tslotextrusion_profile2020",
     "tslotextrusion_profile(fourtsolid,fourtsolid)",
     "tslotextrusion_profile(2020)",
-    "tslotextrusion_profile(fourtsolid)_profile(fourtsolid)",
+    "tslotextrusion_fourtsolid_fourtsolid",
     "tslotextrusion_profile((fourtsolid))",
     "tslotextrusion_unknown1mm",
     "tslotextrusion__l100mm",
   ])
     expect(() => parseModelString(value)).toThrow()
+})
+
+test("tslotextrusion uses a direct boolean flag and rejects legacy selectors", () => {
+  const base = "tslotextrusion"
+  const omitted = mp.string(base).json()
+  if (omitted.fn !== "tslotextrusion") throw new Error("Unexpected model")
+  expect(omitted.fourTSolid).toBe(true)
+  expect(omitted).not.toHaveProperty("profile")
+  expect(mp.string(base + "_fourtsolid").json()).toEqual(omitted)
+  expect(mp.string((base + "_fourtsolid").toUpperCase()).json()).toEqual(
+    omitted,
+  )
+  expect(mp.string(base + "_fourtsolid").params()).toMatchObject({
+    fourtsolid: true,
+    string: base + "_fourtsolid",
+  })
+  for (const suffix of [
+    "fourtsolid_fourtsolid",
+    "fourtsolid1",
+    "fourtsolid(true)",
+    "fourtsolid(false)",
+    "profile(fourtsolid)",
+    "profile(unsupported)",
+  ])
+    expect(() => mp.string(base + "_" + suffix).json()).toThrow()
+  const { fn, ...props } = omitted
+  for (const value of [false, "true", 1, null])
+    expect(() =>
+      tSlotExtrusionModelPropsSchema.parse({ ...props, fourTSolid: value }),
+    ).toThrow()
+  expect(() =>
+    tSlotExtrusionModelPropsSchema.parse({ ...props, profile: "fourtsolid" }),
+  ).toThrow()
 })

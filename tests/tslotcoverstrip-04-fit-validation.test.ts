@@ -6,7 +6,7 @@ import {
   getTSlotCoverStripDimensions,
 } from "../src"
 const source =
-  "tslotcoverstrip_l100mm_w8mm_t1mm_stemw5.8mm_stemh2mm_barbw6.2mm_profile(tee)"
+  "tslotcoverstrip_l100mm_w8mm_t1mm_stemw5.8mm_stemh2mm_barbw6.2mm_tee"
 const props = {
   length: 100,
   width: 8,

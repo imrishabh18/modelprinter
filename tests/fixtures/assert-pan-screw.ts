@@ -10,7 +10,7 @@ import {
 import { parsePanScrewModelParams } from "../../src/models/panscrew/parse-model-string"
 
 export const assertPanScrew = () => {
-  const builder = mp.string("panscrew_m3_l10mm_drive(phillips)")
+  const builder = mp.string("panscrew_m3_l10mm_phillips")
   const model = builder.json()
   if (model.fn !== "panscrew") throw new Error("Unexpected model family")
   expect(model).toMatchObject({
@@ -29,11 +29,11 @@ export const assertPanScrew = () => {
     iso7045: true,
     metricSize: "M3",
     length: 10,
-    thread: "full",
-    drive: "phillips",
-    threadHand: "right",
+    fullThread: true,
+    phillips: true,
+    leftHanded: false,
     threadClass: "6g",
-    threadGender: "male",
+    male: true,
     showThreads: true,
     iso4757: true,
     recessType: "H",
@@ -52,16 +52,14 @@ export const assertPanScrew = () => {
   expect(modelDefinitionSchema.parse(model)).toEqual(model)
   expect(panScrewModelDefinitionSchema.parse(model)).toEqual(model)
   expect(modelprinter.getModelNames()).toContain("panscrew")
-  expect(mp.string("PANSCREW_M3_length1.0cm_DRIVE(PHILLIPS)").json()).toEqual(
-    model,
-  )
+  expect(mp.string("PANSCREW_M3_length1.0cm_PHILLIPS").json()).toEqual(model)
   expect(
     mp
       .string(
-        "panscrew_metricsize(m3)_l10mm_threadpitch0.5mm_threadhand(left)_nothreads",
+        "panscrew_metricsize(m3)_l10mm_threadpitch0.5mm_lefthanded_nothreads",
       )
       .json(),
-  ).toMatchObject({ threadHand: "left", showThreads: false })
+  ).toMatchObject({ leftHanded: true, showThreads: false })
 
   for (const metricSize of ["M3", "M4", "M5", "M6"] as const) {
     const parsed = panScrewModelPropsSchema.parse({

@@ -3,7 +3,7 @@
 Implements roadmap #0001 from [issue #13](https://github.com/tscircuit/modelprinter/issues/13).
 
 ```ts
-mp.string("hexbolt_m6_l25mm_thread(full)_drive(hex)").json()
+mp.string("hexbolt_m6_l25mm_fullthread_hex").json()
 ```
 
 The model pins `iso4017` to **ISO4017:2014**, with M3, M4,
@@ -13,7 +13,7 @@ default; optional `_iso4017` restates it and normalizes to `iso4017: true`.
 The flag accepts no value, and schemas default it to true. Legacy `standard(...)`
 selectors and the `standard` property are unsupported. All normalized lengths are millimeters,
 angles are degrees, and the primary metric thread is male, coarse and right-hand.
-`threadhand(left)` selects the same profile with opposite handedness.
+`lefthanded` selects the same profile with opposite handedness.
 
 The [source table](https://cdn.standards.iteh.ai/samples/63206/dd63a69c4be3432aac1914bccda73b2c/ISO-4017-2014.pdf)
 is pinned by edition and copied into the exported `hexBoltDimensions` table.
@@ -37,8 +37,14 @@ d3 = d - 17H/12 root diameter. `showThreads: false` renders a smooth shank at
 the major diameter, retaining the same head, under-head blend, tip chamfer,
 length and thread identity.
 
-`mN` / `metricsize(mN)` and `l` / `length` are aliases. `drive(...)`, `thread(full)`, `threadhand(...)`, `threadclass(6g)` and
-`threadgender(male)` are selectors. `threads` / `nothreads` set visibility.
+`mN` / `metricsize(mN)` and `l` / `length` are aliases. `hex`,
+`fullthread`, and `male` are value-free flags that directly set `hex: true`,
+`fullThread: true`, and `male: true`; those fixed features default to true.
+`lefthanded` sets `leftHanded: true`, and `righthanded` restates its false default.
+Repeated or conflicting hand flags are rejected. `threadclass(6g)` preserves the
+ISO thread-class designation. `threads` / `nothreads` set visibility.
+The former `drive`, `thread`, `threadHand`, and `threadGender` schema properties
+and their selector tokens are rejected. Flags accept no values.
 Dimensional fields in the table can be repeated explicitly using their
 lowercase field names (for example `threadpitch0.5mm`), or supplied through the
 public schema. They must equal the pinned value; they cannot redefine the

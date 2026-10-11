@@ -5,7 +5,7 @@ const shape = {
   width: positive.default(40),
   height: positive.default(40),
   thickness: positive.default(4),
-  shape: z.literal("righttriangle").default("righttriangle"),
+  rightTriangle: z.literal(true).default(true),
   slotCount: z.literal(2).default(2),
   /** Capsule width and overall length, including both semicircular ends. */
   slot: z.tuple([positive, positive]).default([5, 12]),

@@ -1,18 +1,13 @@
-import { expandModelStringFlags } from "../../utils/model-string-flags"
-import { stringFlags } from "./string-flags"
 import { hexNutModelDefinitionSchema } from "./schema"
 import type { RawModelprinterParams } from "../../parse-model-string"
 import { splitModelStringTokens } from "../../split-model-string-tokens"
 
 export function parseHexNutModelParams(raw: RawModelprinterParams) {
-  const tokens = splitModelStringTokens(
-    expandModelStringFlags(raw.string, stringFlags),
-  )
+  const tokens = splitModelStringTokens(raw.string)
   if (raw.fn !== "hexnut" || tokens[0]?.toLowerCase() !== "hexnut")
     throw new Error("Expected hexnut without an inline argument")
   const props: Record<string, unknown> = { fn: "hexnut" }
   const selectors = {
-    threadhand: "threadHand",
     threadclass: "threadClass",
   } as const
   let explicitFamily = false
@@ -49,6 +44,10 @@ export function parseHexNutModelParams(raw: RawModelprinterParams) {
           throw new Error("Duplicate hex nut property threadPitch")
         props.threadPitch = 25.4 / Number(parts[1])
       }
+    } else if (name === "righthanded") {
+      if (value) throw new Error("Handedness flags cannot have a value")
+      property = "rightHanded"
+      parsed = true
     } else if (name === "threadpitch") property = "threadPitch"
     else if (name in selectors) {
       property = selectors[name as keyof typeof selectors]

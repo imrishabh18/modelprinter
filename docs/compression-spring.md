@@ -1,6 +1,6 @@
 # Compression spring parameter contract
 
-`compressionspring_spec(custom)_od8mm_wire1mm_l20mm_turns8_active6_ends(closedground)_hand(right)_state(free)`
+`compressionspring_custom_od8mm_wire1mm_l20mm_turns8_active6_closedground_righthanded_free`
 selects custom construction version 1. This family defines an exact nominal
 spring for assembly visualization; it does not claim a standard profile,
 material stiffness, force, fatigue life or manufacturing tolerances.
@@ -8,11 +8,9 @@ material stiffness, force, fatigue life or manufacturing tolerances.
 Required tokens are `od` (outside diameter), `wire` (round-wire diameter),
 `l`/`length`/`freelength` (free bearing-face separation), and `turns` (total
 complete revolutions). `active` is optional and defaults to totalTurns-2.
-`spec(custom)`, `ends(closedground)`, `hand(right)` and `state(free)` are defaults.
-`hand(left)` mirrors winding. Only this end construction and free state are
+`custom`, `closedground`, and `free` are optional value-free flags whose JSON properties `custom`, `closedGround`, and `free` default to `true`. `leftHanded` defaults to `false`; `_righthanded` selects that default explicitly and `_lefthanded` selects `true`, mirroring the winding. Only this end construction and free state are
 supported; open ends, unground ends, variable-pitch coils and loaded/solid
-poses require separate contracts. No `threadhand` token is used: winding is
-independent of thread conventions.
+poses require separate contracts. The old `spec(...)`, `ends(...)`, `hand(...)`, and `state(...)` selectors and their JSON properties are rejected. Repeated or conflicting hand flags are rejected.
 
 All lengths accept positive finite millimeter numbers or complete numeric
 strings with `mm`, `cm`, `m`, `in`, `inch`, `mil`, `ft`, or `feet`, normalized to

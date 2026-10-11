@@ -1,5 +1,3 @@
-import { expandModelStringFlags } from "../../utils/model-string-flags"
-import { stringFlags } from "./string-flags"
 import { parseGearInteger, parseGearToken } from "../../gear-parameter-schemas"
 import type { RawModelprinterParams } from "../../parse-model-string"
 import { splitModelStringTokens } from "../../split-model-string-tokens"
@@ -16,9 +14,7 @@ const lengths = {
 } as const
 
 export function parseTSlotGussetModelParams(raw: RawModelprinterParams) {
-  const tokens = splitModelStringTokens(
-    expandModelStringFlags(raw.string, stringFlags),
-  )
+  const tokens = splitModelStringTokens(raw.string)
   if (raw.fn !== "tslotgusset" || tokens[0]?.toLowerCase() !== raw.fn)
     throw new Error("Expected tslotgusset without an inline value")
   const props: Record<string, unknown> = { fn: "tslotgusset" }
@@ -30,11 +26,10 @@ export function parseTSlotGussetModelParams(raw: RawModelprinterParams) {
     else if (name === "slots" || name === "slotcount") {
       property = "slotCount"
       parsed = parseGearInteger(value, "slotCount")
-    } else if (name === "shape") {
-      property = "shape"
-      const match = value.match(/^\(([a-z]+)\)$/i)
-      if (!match) throw new Error("Shape requires one parenthesized identity")
-      parsed = match[1]!.toLowerCase()
+    } else if (name === "righttriangle") {
+      property = "rightTriangle"
+      if (value !== "") throw new Error("righttriangle is a value-free flag")
+      parsed = true
     } else if (name === "slot" || name === "centers") {
       property = name
       const match = value.match(/^\(([^(),]+),([^(),]+)\)$/)

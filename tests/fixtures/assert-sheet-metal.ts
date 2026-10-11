@@ -6,7 +6,9 @@ export function assertSheetMetal() {
     mp.string("sheetmetal_channel_w28mm_l24mm_h14mm_t1mm_r2mm").json(),
   ).toMatchObject({
     fn: "sheetmetal",
-    profile: "channel",
+    plate: false,
+    angle: false,
+    channel: true,
     width: 28,
     baseLength: 24,
   })
@@ -15,7 +17,9 @@ export function assertSheetMetal() {
       .string("sheetmetal_plate_w20_l20_hole1(r3mm_bottomface_leftofcenter3mm)")
       .json(),
   ).toMatchObject({
-    holes: [{ panel: "base", shape: "round", diameter: 6, u: -3, v: 0 }],
+    holes: [
+      { panel: "base", round: true, slot: false, diameter: 6, u: -3, v: 0 },
+    ],
   })
   expect(
     mp
@@ -27,7 +31,8 @@ export function assertSheetMetal() {
     holes: [
       {
         panel: "left",
-        shape: "slot",
+        round: false,
+        slot: true,
         length: 10,
         width: 2,
         u: 2,

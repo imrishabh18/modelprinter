@@ -19,7 +19,7 @@ const shape = {
   /** Overall end-plane distance including the integral flange. */
   length: positiveLength,
   flangeThickness: positiveLength,
-  style: z.literal("plainclosed").default("plainclosed"),
+  plainClosed: z.literal(true).default(true),
 }
 
 type ResolvedProps = z.output<z.ZodObject<typeof shape>>

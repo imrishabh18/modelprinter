@@ -14,8 +14,8 @@ const definition = mp
 const dimensions = getBallTransferUnitDimensions()
 ```
 
-The roadmap spelling `_mount(face3hole)` is accepted as an alias for `_face3hole`.
-Both produce `faceThreeHole: true`; repeated or mixed selectors are rejected.
+The value-free flag `_face3hole` produces `faceThreeHole: true`. Repeated flags,
+flags with values and enum selectors are rejected.
 Only this circular three-hole construction is supported.
 
 | Property | Tokens | Default (mm) |

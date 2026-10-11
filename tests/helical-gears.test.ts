@@ -14,7 +14,7 @@ test("helical gear defaults, aliases, units, and model union", () => {
   const defaults = {
     ...spurGearModelPropsSchema.parse({}),
     helixAngle: 20,
-    handedness: "right" as const,
+    leftHanded: false,
     segmentsPerTurn: 32,
   }
   expect(helicalGearModelPropsSchema.parse({})).toEqual(defaults)
@@ -36,7 +36,7 @@ test("helical gear defaults, aliases, units, and model union", () => {
     module: 1,
     faceWidth: 6.35,
     helixAngle: 30,
-    handedness: "left",
+    leftHanded: true,
     boreDiameter: 2,
     backlash: 0.1,
     clearance: 0.3,
@@ -56,7 +56,7 @@ test("helical gear defaults, aliases, units, and model union", () => {
     faceWidth: 4,
     pressureAngle: 20,
     helixAngle: 25,
-    handedness: "right",
+    leftHanded: false,
     boreDiameter: 3,
   })
   expect(mp.string("helicalgear_width2mm").json()).toMatchObject({
@@ -78,7 +78,7 @@ test("helical dimensions preserve transverse spur geometry and signed pitch-cyli
     (((8 * Math.tan(Math.PI / 6)) / 30) * 180) / Math.PI,
   )
   expect(
-    getHelicalGearDimensions({ ...props, helixAngle: 30, handedness: "left" })
+    getHelicalGearDimensions({ ...props, helixAngle: 30, leftHanded: true })
       .twistAngle,
   ).toBe(-d.twistAngle)
   const zero = getHelicalGearDimensions({ ...props, helixAngle: 0 })

@@ -8,8 +8,7 @@ import {
   mp,
 } from "../../src"
 
-const example =
-  "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4"
+const example = "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4"
 const props = {
   boreDiameter: 8,
   outerDiameter: 20,
@@ -28,9 +27,9 @@ export function assertRigidCouplerContract() {
     length: 25,
     screwCount: 4,
     metricSize: "M4",
-    mount: "setscrew",
+    setScrew: true,
     threadPitch: 0.7,
-    threadHand: "right",
+    leftHanded: false,
     threadClass: "6H",
     screwEndOffset: 6.25,
     screwAngle: 0,
@@ -46,9 +45,7 @@ export function assertRigidCouplerContract() {
   expect(modelDefinitionSchema.parse(model)).toEqual(model)
   expect(
     mp
-      .string(
-        "RIGIDCOUPLER_BORE0.8CM_OD2CM_L2.5CM_MOUNT(SETSCREW)_SCREWCOUNT4_M4",
-      )
+      .string("RIGIDCOUPLER_BORE0.8CM_OD2CM_L2.5CM_setscrew_SCREWCOUNT4_M4")
       .json(),
   ).toEqual(model)
   expect(
@@ -58,10 +55,8 @@ export function assertRigidCouplerContract() {
     }).boreDiameter,
   ).toBeCloseTo(8)
   expect(
-    mp
-      .string(example + "_threadpitch0.5mm_threadhand(left)_threadclass(6H)")
-      .json(),
-  ).toMatchObject({ threadPitch: 0.5, threadHand: "left", threadClass: "6H" })
+    mp.string(example + "_threadpitch0.5mm_lefthanded_threadclass(6H)").json(),
+  ).toMatchObject({ threadPitch: 0.5, leftHanded: true, threadClass: "6H" })
   expect(
     rigidCouplerModelPropsSchema.parse({ ...props, metricSize: "M2.5" })
       .threadPitch,
@@ -79,7 +74,7 @@ export function assertRigidCouplerLayout() {
     direction: [-1, -0, 0],
     diameter: 4,
     threadPitch: 0.7,
-    threadHand: "right",
+    leftHanded: false,
     threadGender: "female",
   })
   expect(b0?.start).toEqual([10, 0, 18.75])
@@ -115,6 +110,31 @@ export function assertRigidCouplerLayout() {
 }
 
 export function assertRigidCouplerValidation() {
+  const source = "rigidcoupler_" + "bore8mm_od20mm_l25mm_m4"
+  for (const token of [
+    "mount(setscrew)",
+    "threadhand(left)",
+    "threadhand(right)",
+    "setscrew_setscrew",
+    "lefthanded_righthanded",
+    "righthanded_lefthanded",
+    "lefthanded_lefthanded",
+    "righthanded_righthanded",
+    "setscrew(true)",
+    "lefthanded(true)",
+  ])
+    expect(() => mp.string(source + "_" + token).json()).toThrow()
+  expect(mp.string(source + "_righthanded").json()).toMatchObject({
+    leftHanded: false,
+  })
+  expect(mp.string(source + "_lefthanded").json()).toMatchObject({
+    leftHanded: true,
+  })
+  for (const legacy of [{ mount: "setscrew" }, { threadHand: "left" }])
+    expect(() =>
+      rigidCouplerModelPropsSchema.parse({ ...props, ...legacy }),
+    ).toThrow()
+
   for (const boreDiameter of [4.1, 5.6, Math.SQRT2 * 4]) {
     expect(() =>
       rigidCouplerModelPropsSchema.parse({ ...props, boreDiameter }),
@@ -135,37 +155,37 @@ export function assertRigidCouplerValidation() {
   ).not.toThrow()
 
   for (const source of [
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_typo1mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_bore9mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_m3",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_mount(unknown)",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_threadpitch4mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_threadhand(opposed)",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_threadclass(6g)",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_threadpitch0mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_threadpitch0.7oops",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_threadpitch1e-3mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_mountsetscrew",
-    "rigidcoupler_bore_od20mm_l25mm_mount(setscrew)_screwcount4_m4",
-    "rigidcoupler_bore0mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4",
-    "rigidcoupler_bore20mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4",
-    "rigidcoupler_bore8mmoops_od20mm_l25mm_mount(setscrew)_screwcount4_m4",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m7",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_threadpitch(0.7mm)",
-    "rigidcoupler(custom)_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_typo1mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_bore9mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_m3",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_mount(unknown)",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_threadpitch4mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_threadhand(opposed)",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_threadclass(6g)",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_threadpitch0mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_threadpitch0.7oops",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_threadpitch1e-3mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_mountsetscrew",
+    "rigidcoupler_bore_od20mm_l25mm_setscrew_screwcount4_m4",
+    "rigidcoupler_bore0mm_od20mm_l25mm_setscrew_screwcount4_m4",
+    "rigidcoupler_bore20mm_od20mm_l25mm_setscrew_screwcount4_m4",
+    "rigidcoupler_bore8mmoops_od20mm_l25mm_setscrew_screwcount4_m4",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m7",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_threadpitch(0.7mm)",
+    "rigidcoupler(custom)_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4",
     "rigidcoupler",
-    "rigidcoupler_bore4.1mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4",
-    "rigidcoupler_bore8mm_boreb5.6mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_length30mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_screwcount2",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_screwendoffset1mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_screwendoffset12mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_boreb20mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_boreb4mm",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4_m4_screwangle90rad",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount3_m4",
-    "rigidcoupler_bore8mm_od20mm_l25mm_mount(setscrew)_screwcount4mm_m4",
+    "rigidcoupler_bore4.1mm_od20mm_l25mm_setscrew_screwcount4_m4",
+    "rigidcoupler_bore8mm_boreb5.6mm_od20mm_l25mm_setscrew_screwcount4_m4",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_length30mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_screwcount2",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_screwendoffset1mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_screwendoffset12mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_boreb20mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_boreb4mm",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4_m4_screwangle90rad",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount3_m4",
+    "rigidcoupler_bore8mm_od20mm_l25mm_setscrew_screwcount4mm_m4",
   ])
     expect(() => mp.string(source).json()).toThrow()
   for (const boreDiameter of [

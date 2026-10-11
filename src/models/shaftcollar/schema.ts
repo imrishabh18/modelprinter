@@ -30,10 +30,10 @@ const shape = {
   width: positive,
   screwZ: positive.optional(),
   screwAngle: z.number().finite().default(0),
-  mount: z.literal("setscrew").default("setscrew"),
+  setScrew: z.literal(true).default(true),
   metricSize: metricBoltSizeSchema,
   threadPitch: positive.optional(),
-  threadHand: z.enum(["right", "left"]).default("right"),
+  leftHanded: z.boolean().default(false),
   threadClass: z.literal("6H").default("6H"),
   chamfer: nonnegative.default(0),
 }
@@ -111,7 +111,7 @@ export function getShaftCollarDimensions(input: ShaftCollarModelPropsInput) {
         radius -
         Math.sqrt((p.boreDiameter / 2) ** 2 - (threadDiameter / 2) ** 2),
       threadPitch: p.threadPitch,
-      threadHand: p.threadHand,
+      leftHanded: p.leftHanded,
       threadGender: "female" as const,
       threadClass: p.threadClass,
     },

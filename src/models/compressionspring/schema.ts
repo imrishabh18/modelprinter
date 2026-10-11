@@ -13,16 +13,16 @@ const length = z
   .refine((value) => value > 0, "Length must be positive")
 const turnCount = z.number().int().min(1).max(Number.MAX_SAFE_INTEGER)
 const shape = {
-  spec: z.literal("custom").default("custom"),
+  custom: z.literal(true).default(true),
   outerDiameter: length,
   wireDiameter: length,
   freeLength: length,
   totalTurns: turnCount.min(3),
   /** Closed-ground ends have exactly one inactive turn at each end. */
   activeTurns: turnCount.optional(),
-  ends: z.literal("closedground").default("closedground"),
-  hand: z.enum(["right", "left"]).default("right"),
-  state: z.literal("free").default("free"),
+  closedGround: z.literal(true).default(true),
+  leftHanded: z.boolean().default(false),
+  free: z.literal(true).default(true),
 }
 function validate(
   props: z.output<z.ZodObject<typeof shape>>,
@@ -113,7 +113,7 @@ export function getCompressionSpringCenterlinePoint(
     throw new Error("Turn coordinate must be finite and within [0,totalTurns]")
   const radius = (props.outerDiameter - props.wireDiameter) / 2
   const pitch = (props.freeLength - 2 * props.wireDiameter) / props.activeTurns
-  const phase = (props.hand === "right" ? 1 : -1) * 2 * Math.PI * (turn % 1)
+  const phase = (props.leftHanded ? -1 : 1) * 2 * Math.PI * (turn % 1)
   const z =
     turn <= 1
       ? props.wireDiameter * turn

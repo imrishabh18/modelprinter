@@ -24,7 +24,7 @@ test("hex nut example selects pinned ISO dimensions and through-thread defaults"
     asmeb1822: false,
     metricSize: "M6",
     threadPitch: 1,
-    threadHand: "right",
+    rightHanded: true,
     threadClass: "6H",
     showThreads: true,
   })

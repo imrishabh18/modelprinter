@@ -10,20 +10,19 @@ import {
 } from "../src"
 
 test("plain bushing roadmap example, dimensions and public registry", () => {
-  const source =
-    "plainbushing_id8mm_od12mm_l20mm_style(plainclosed)_edgechamfer0.5mm"
+  const source = "plainbushing_id8mm_od12mm_l20mm_plainclosed_edgechamfer0.5mm"
   const builder = mp.string(source)
   expect(builder.params()).toMatchObject({
     id: "8mm",
     od: "12mm",
-    style: "(plainclosed)",
+    plainclosed: true,
   })
   const expected = {
     fn: "plainbushing",
     innerDiameter: 8,
     outerDiameter: 12,
     length: 20,
-    style: "plainclosed",
+    plainClosed: true,
     edgeChamfer: 0.5,
   } as const
   expect(builder.json()).toEqual(expected)
@@ -60,13 +59,13 @@ test("plain bushing defaults, length units and uppercase aliases", () => {
     innerDiameter: 8,
     outerDiameter: 12,
     length: 20,
-    style: "plainclosed",
+    plainClosed: true,
     edgeChamfer: 0,
   })
   expect(
     mp
       .string(
-        "PLAINBUSHING_innerdiameter0.8CM_outerdiameter1.2cm_length20MM_STYLE(PLAINCLOSED)",
+        "PLAINBUSHING_innerdiameter0.8CM_outerdiameter1.2cm_length20MM_PLAINCLOSED",
       )
       .json(),
   ).toEqual({
@@ -74,7 +73,7 @@ test("plain bushing defaults, length units and uppercase aliases", () => {
     innerDiameter: 8,
     outerDiameter: 12,
     length: 20,
-    style: "plainclosed",
+    plainClosed: true,
     edgeChamfer: 0,
   })
   expect(
@@ -96,13 +95,13 @@ test("plain bushing rejects malformed tokens, duplicates and unknown styles", ()
     "l20mm",
     "length20mm",
     "edgechamfer0.1mm_edgechamfer0.1mm",
-    "style(plainclosed)_style(plainclosed)",
+    "plainclosed_plainclosed",
     "style(open)",
     "style(ball)",
     "style",
     "stylePLAINCLOSED",
-    "style(plainclosed)junk",
-    "style(plainclosed)(plainclosed)",
+    "plainclosedjunk",
+    "plainclosed(plainclosed)",
     "edgechamfer1mm",
     "edgechamfer-1mm",
     "edgechamfer",
@@ -129,7 +128,7 @@ test("plain bushing rejects malformed tokens, duplicates and unknown styles", ()
     "plainbushing_id8mm_od12mm_l1e2",
     "plainbushing_id(8mm)_od12mm_l20mm",
     `${base}_style(plainclosed`,
-    `${base}__style(plainclosed)`,
+    `${base}__plainclosed`,
   ])
     expect(() => mp.string(source).json()).toThrow()
 })
@@ -164,4 +163,37 @@ test("plain bushing direct schemas reject invalid dimensions and incomplete leng
     ).toThrow()
   }
   expect(() => getPlainBushingDimensions({ ...base, edgeChamfer: 1 })).toThrow()
+})
+
+test("plainbushing uses a direct boolean flag and rejects legacy selectors", () => {
+  const base = "plainbushing_id8mm_od12mm_l20mm"
+  const omitted = mp.string(base).json()
+  if (omitted.fn !== "plainbushing") throw new Error("Unexpected model")
+  expect(omitted.plainClosed).toBe(true)
+  expect(omitted).not.toHaveProperty("style")
+  expect(mp.string(base + "_plainclosed").json()).toEqual(omitted)
+  expect(mp.string((base + "_plainclosed").toUpperCase()).json()).toEqual(
+    omitted,
+  )
+  expect(mp.string(base + "_plainclosed").params()).toMatchObject({
+    plainclosed: true,
+    string: base + "_plainclosed",
+  })
+  for (const suffix of [
+    "plainclosed_plainclosed",
+    "plainclosed1",
+    "plainclosed(true)",
+    "plainclosed(false)",
+    "style(plainclosed)",
+    "style(unsupported)",
+  ])
+    expect(() => mp.string(base + "_" + suffix).json()).toThrow()
+  const { fn, ...props } = omitted
+  for (const value of [false, "true", 1, null])
+    expect(() =>
+      plainBushingModelPropsSchema.parse({ ...props, plainClosed: value }),
+    ).toThrow()
+  expect(() =>
+    plainBushingModelPropsSchema.parse({ ...props, style: "plainclosed" }),
+  ).toThrow()
 })

@@ -20,18 +20,20 @@ export function assertNemaMotor(size: NemaSize) {
   expect(definition.mountingHoleSpacing).toBe(expected.pitch)
   expect(definition.mountingHoleDiameter).toBe(expected.diameter)
   const { fn, ...props } = definition
-  expect(props.backFace).toBe(size === 34 ? "plain" : "screws")
+  expect(props.backFacePlain).toBe(size === 34)
+  expect(props.backFaceHoles).toBe(false)
+  expect(props.backFaceScrews).toBe(size !== 34)
   expect(props.backFaceHoleSpacing).toBe(size === 34 ? 40 : expected.pitch)
   expect(props.backFaceScrewSize).toBe(
     ({ 8: "M2", 17: "M3", 23: "M4", 34: "M5" } as const)[size],
   )
   for (const [token, mode] of [
-    ["backfaceholes", "holes"],
-    ["backfacescrews", "screws"],
-    ["plainbackface", "plain"],
-  ])
+    ["backfaceholes", "backFaceHoles"],
+    ["backfacescrews", "backFaceScrews"],
+    ["plainbackface", "backFacePlain"],
+  ] as const)
     expect(mp.string(`nema${size}_${token}`).json()).toMatchObject({
-      backFace: mode,
+      [mode]: true,
     })
   expect(
     mp
@@ -40,7 +42,7 @@ export function assertNemaMotor(size: NemaSize) {
       )
       .json(),
   ).toMatchObject({
-    backFace: "holes",
+    backFaceHoles: true,
     backFaceHoleSpacing: 12,
     backFaceHoleDiameter: 2,
     backFaceHoleDepth: 1,
@@ -48,7 +50,7 @@ export function assertNemaMotor(size: NemaSize) {
   })
   expect(
     modelDefinitionSchema.parse(mp.string(`nema${size}_backfaceholes`).json()),
-  ).toMatchObject({ backFace: "holes" })
+  ).toMatchObject({ backFaceHoles: true })
   expect(props.bodyLength).toBe(expected.length)
   expect(props.shaftLength).toBe(expected.shaft)
   expect(props.shaftFlatLength).toBe(size === 8 ? 10 : 15)
@@ -57,14 +59,14 @@ export function assertNemaMotor(size: NemaSize) {
       .string(`nema${size}_dshaft_flatdepth0.5mm_flatlength8mm_flatangle90deg`)
       .json(),
   ).toMatchObject({
-    shaftShape: "d",
+    dShaft: true,
     shaftFlatDepth: 0.5,
     shaftFlatLength: 8,
     shaftFlatAngle: 90,
   })
   expect(mp.string(`nema${size}_l6cm_round`).json()).toMatchObject({
     bodyLength: 60,
-    shaftShape: "round",
+    roundShaft: true,
   })
   expect(
     mp.string("nema8_holespacing15.4mm_pilotdiameter16mm").json(),
@@ -101,7 +103,7 @@ export function assertNemaMotor(size: NemaSize) {
     { bodyLength: 8 },
     { bodyWidth: 20 },
     { pilotDiameter: 4 },
-    { shaftShape: "d", shaftFlatDepth: 0 },
+    { dShaft: true, shaftFlatDepth: 0 },
     { mountingHoleSpacing: 1 },
     { mystery: true },
     { backFace: "threads" },

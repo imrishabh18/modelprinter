@@ -10,7 +10,7 @@ import {
 import { parseFlatHeadScrewModelParams } from "../../src/models/flatheadscrew/parse-model-string"
 
 export const assertFlatHeadScrew = () => {
-  const builder = mp.string("flatheadscrew_m3_l10mm_drive(hexsocket)")
+  const builder = mp.string("flatheadscrew_m3_l10mm_hexsocket")
   const model = builder.json()
   if (model.fn !== "flatheadscrew") throw new Error("Unexpected model family")
   expect(model).toMatchObject({
@@ -31,11 +31,11 @@ export const assertFlatHeadScrew = () => {
     iso10642: true,
     metricSize: "M3",
     length: 10,
-    thread: "full",
-    drive: "hexsocket",
-    threadHand: "right",
+    fullThread: true,
+    hexSocket: true,
+    leftHanded: false,
     threadClass: "6g",
-    threadGender: "male",
+    male: true,
     showThreads: true,
 
     ...flatHeadScrewDimensions.M3,
@@ -44,22 +44,22 @@ export const assertFlatHeadScrew = () => {
   expect(flatHeadScrewModelPropsSchema.parse(props)).toEqual(props)
   expect(model).not.toHaveProperty("standard")
   expect(model).not.toHaveProperty("headStandard")
-  expect(
-    mp.string("flatheadscrew_iso10642_m3_l10mm_drive(hexsocket)").json(),
-  ).toEqual(model)
+  expect(mp.string("flatheadscrew_iso10642_m3_l10mm_hexsocket").json()).toEqual(
+    model,
+  )
   expect(modelDefinitionSchema.parse(model)).toEqual(model)
   expect(flatHeadScrewModelDefinitionSchema.parse(model)).toEqual(model)
   expect(modelprinter.getModelNames()).toContain("flatheadscrew")
   expect(
-    mp.string("FLATHEADSCREW_M3_length1.0cm_ISO10642_DRIVE(HEXSOCKET)").json(),
+    mp.string("FLATHEADSCREW_M3_length1.0cm_ISO10642_HEXSOCKET").json(),
   ).toEqual(model)
   expect(
     mp
       .string(
-        "flatheadscrew_metricsize(m3)_l10mm_threadpitch0.5mm_threadhand(left)_nothreads",
+        "flatheadscrew_metricsize(m3)_l10mm_threadpitch0.5mm_lefthanded_nothreads",
       )
       .json(),
-  ).toMatchObject({ threadHand: "left", showThreads: false })
+  ).toMatchObject({ leftHanded: true, showThreads: false })
 
   for (const metricSize of ["M3", "M4", "M5", "M6"] as const) {
     const parsed = flatHeadScrewModelPropsSchema.parse({

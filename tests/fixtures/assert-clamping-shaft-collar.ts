@@ -9,7 +9,7 @@ import {
 } from "../../src"
 
 const example =
-  "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4"
+  "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4"
 const props = {
   boreDiameter: 8,
   outerDiameter: 18,
@@ -28,9 +28,9 @@ export function assertClampingShaftCollarContract() {
     width: 9,
     splitWidth: 1,
     metricSize: "M4",
-    mount: "singleclamp",
+    singleClamp: true,
     threadPitch: 0.7,
-    threadHand: "right",
+    leftHanded: false,
     threadClass: "6H",
     screwZ: 4.5,
     clampX: 6.5,
@@ -48,7 +48,7 @@ export function assertClampingShaftCollarContract() {
   expect(
     mp
       .string(
-        "CLAMPINGSHAFTCOLLAR_BORE0.8CM_OD1.8CM_W0.9CM_SPLIT0.1CM_MOUNT(SINGLECLAMP)_M4",
+        "CLAMPINGSHAFTCOLLAR_BORE0.8CM_OD1.8CM_W0.9CM_SPLIT0.1CM_singleclamp_M4",
       )
       .json(),
   ).toEqual(model)
@@ -59,10 +59,8 @@ export function assertClampingShaftCollarContract() {
     }).boreDiameter,
   ).toBeCloseTo(8)
   expect(
-    mp
-      .string(example + "_threadpitch0.5mm_threadhand(left)_threadclass(6H)")
-      .json(),
-  ).toMatchObject({ threadPitch: 0.5, threadHand: "left", threadClass: "6H" })
+    mp.string(example + "_threadpitch0.5mm_lefthanded_threadclass(6H)").json(),
+  ).toMatchObject({ threadPitch: 0.5, leftHanded: true, threadClass: "6H" })
   expect(
     clampingShaftCollarModelPropsSchema.parse({ ...props, metricSize: "M2.5" })
       .threadPitch,
@@ -88,7 +86,7 @@ export function assertClampingShaftCollarLayout() {
     direction: [0, 1, 0],
     diameter: 4,
     threadPitch: 0.7,
-    threadHand: "right",
+    leftHanded: false,
     threadGender: "female",
   })
   expect(
@@ -113,36 +111,61 @@ export function assertClampingShaftCollarLayout() {
 }
 
 export function assertClampingShaftCollarValidation() {
+  const source = "clampingshaftcollar_" + "bore8mm_od18mm_w9mm_split1mm_m4"
+  for (const token of [
+    "mount(singleclamp)",
+    "threadhand(left)",
+    "threadhand(right)",
+    "singleclamp_singleclamp",
+    "lefthanded_righthanded",
+    "righthanded_lefthanded",
+    "lefthanded_lefthanded",
+    "righthanded_righthanded",
+    "singleclamp(true)",
+    "lefthanded(true)",
+  ])
+    expect(() => mp.string(source + "_" + token).json()).toThrow()
+  expect(mp.string(source + "_righthanded").json()).toMatchObject({
+    leftHanded: false,
+  })
+  expect(mp.string(source + "_lefthanded").json()).toMatchObject({
+    leftHanded: true,
+  })
+  for (const legacy of [{ mount: "singleclamp" }, { threadHand: "left" }])
+    expect(() =>
+      clampingShaftCollarModelPropsSchema.parse({ ...props, ...legacy }),
+    ).toThrow()
+
   for (const source of [
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_typo1mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_bore9mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_m3",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_mount(unknown)",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_threadpitch4mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_threadhand(opposed)",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_threadclass(6g)",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_threadpitch0mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_threadpitch0.7oops",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_threadpitch1e-3mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_mountsetscrew",
-    "clampingshaftcollar_bore_od18mm_w9mm_split1mm_mount(singleclamp)_m4",
-    "clampingshaftcollar_bore0mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4",
-    "clampingshaftcollar_bore20mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4",
-    "clampingshaftcollar_bore8mmoops_od18mm_w9mm_split1mm_mount(singleclamp)_m4",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m7",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_threadpitch(0.7mm)",
-    "clampingshaftcollar(custom)_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_typo1mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_bore9mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_m3",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_mount(unknown)",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_threadpitch4mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_threadhand(opposed)",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_threadclass(6g)",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_threadpitch0mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_threadpitch0.7oops",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_threadpitch1e-3mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_mountsetscrew",
+    "clampingshaftcollar_bore_od18mm_w9mm_split1mm_singleclamp_m4",
+    "clampingshaftcollar_bore0mm_od18mm_w9mm_split1mm_singleclamp_m4",
+    "clampingshaftcollar_bore20mm_od18mm_w9mm_split1mm_singleclamp_m4",
+    "clampingshaftcollar_bore8mmoops_od18mm_w9mm_split1mm_singleclamp_m4",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m7",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_threadpitch(0.7mm)",
+    "clampingshaftcollar(custom)_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4",
     "clampingshaftcollar",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_width9mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_screwz1mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_clampx5mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_clampx8mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_clearance4mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_clearance6mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4_chamfer3mm",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split8mm_mount(singleclamp)_m4",
-    "clampingshaftcollar_bore8mm_od18mm_w9mm_split7mm_mount(singleclamp)_m4",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_width9mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_screwz1mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_clampx5mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_clampx8mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_clearance4mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_clearance6mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4_chamfer3mm",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split8mm_singleclamp_m4",
+    "clampingshaftcollar_bore8mm_od18mm_w9mm_split7mm_singleclamp_m4",
   ])
     expect(() => mp.string(source).json()).toThrow()
   for (const boreDiameter of [

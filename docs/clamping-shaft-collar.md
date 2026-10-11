@@ -5,7 +5,7 @@ Roadmap [#13, proposal 0018](https://github.com/tscircuit/modelprinter/issues/13
 ```ts
 import { mp, getClampingShaftCollarDimensions } from "@tscircuit/modelprinter"
 
-const model = mp.string("clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_mount(singleclamp)_m4").json()
+const model = mp.string("clampingshaftcollar_bore8mm_od18mm_w9mm_split1mm_singleclamp_m4").json()
 if (model.fn !== "clampingshaftcollar") throw new Error("Unexpected family")
 const { fn, ...props } = model
 const dimensions = getClampingShaftCollarDimensions(props)
@@ -13,9 +13,9 @@ const dimensions = getClampingShaftCollarDimensions(props)
 
 The schema is `clampingShaftCollarModelPropsSchema`; the definition schema is `clampingShaftCollarModelDefinitionSchema`. Input/output/definition TypeScript types are exported, and the family participates in `modelDefinitionSchema` and `modelprinter.getModelNames()`. The dimension helper accepts properties without `fn`, validates them, and supplies exact cutter locations and depths for a downstream renderer. Modelprinter owns this contract; geometry is generated elsewhere.
 
-All lengths normalize to millimeters. Numbers mean millimeters; strings accept a complete decimal with an optional `mm`, `cm`, `m`, `in`, `inch`, `mil`, `ft`, or `feet` suffix. Angles are degrees. Model strings are case insensitive; selectors require parentheses. Unknown fields/tokens, duplicate tokens (including aliases), missing required values, unrecognized units, trailing text, nonfinite values, and incompatible dimensions fail validation. Counts are unitless integers.
+All lengths normalize to millimeters. Numbers mean millimeters; strings accept a complete decimal with an optional `mm`, `cm`, `m`, `in`, `inch`, `mil`, `ft`, or `feet` suffix. Angles are degrees. Model strings are case insensitive; flags take no values. Only the standard `_threadclass(6H)` designation uses parentheses. Unknown fields/tokens, duplicate tokens (including aliases), missing required values, unrecognized units, trailing text, nonfinite values, and incompatible dimensions fail validation. Counts are unitless integers.
 
-The `_mN` token controls the female clamping/set-screw thread, not the axial shaft bore. It selects nominal ISO metric diameter, coarse pitch, and right hand. Supported nominal sizes/coarse pitches (mm): M2/0.4, M2.5/0.45, M3/0.5, M4/0.7, M5/0.8, M6/1, M8/1.25, M10/1.5, M12/1.75. `_threadpitch0.5mm` and `_threadhand(left)` override pitch and hand; pitch must be positive and less than diameter. `_threadclass(6H)` is the sole supported internal class and defaults to 6H. The contract defines nominal threaded cylindrical holes; tolerances and helical thread root/crest relief are not encoded. No screw is included.
+The `_mN` token controls the female clamping/set-screw thread, not the axial shaft bore. It selects nominal ISO metric diameter, coarse pitch, and right hand. Supported nominal sizes/coarse pitches (mm): M2/0.4, M2.5/0.45, M3/0.5, M4/0.7, M5/0.8, M6/1, M8/1.25, M10/1.5, M12/1.75. `_threadpitch0.5mm` and `_lefthanded` override pitch and hand; pitch must be positive and less than diameter. `_threadclass(6H)` is the sole supported internal class and defaults to 6H. The contract defines nominal threaded cylindrical holes; tolerances and helical thread root/crest relief are not encoded. No screw is included.
 
 | Token | JSON property | Default/meaning |
 | --- | --- | --- |
@@ -23,12 +23,12 @@ The `_mN` token controls the female clamping/set-screw thread, not the axial sha
 | `od` | `outerDiameter` | Required, cylindrical exterior |
 | `m` | `metricSize` | Required, female mounting thread |
 | `threadpitch` | `threadPitch` | Coarse pitch for `metricSize` |
-| `threadhand(...)` | `threadHand` | `right`; also accepts `left` |
+| `lefthanded`, `righthanded` | `leftHanded` | `false` (right handed); `_lefthanded` selects `true` |
 | `threadclass(...)` | `threadClass` | Fixed `6H` |
 | `chamfer` | `chamfer` | 0; equal 45-degree radial/axial setbacks at both outer end edges and both bore entries |
 | `w`, `width` | `width` | Required axial width |
 | `split` | `splitWidth` | Required slit width |
-| `mount(...)` | `mount` | Fixed `singleclamp` |
+| `singleclamp` | `singleClamp` | `true`; value-free fixed construction flag |
 | `screwz` | `screwZ` | `width / 2`, from the lower face |
 | `clampx` | `clampX` | `(outerDiameter+boreDiameter)/4`, halfway across the radial wall on +X |
 | `clearance` | `clearanceHoleDiameter` | Thread diameter + 0.5 mm |
@@ -43,3 +43,5 @@ The clamp screw axis is +Y at X=`clampX`, Z=`screwZ`. It enters from -Y through 
 The extents deliberately cover the curved outer surface across each cylinder's full diameter. Hole depth is a fixed through-arm construction, not a blind depth selected from the thread size. The thread hole carries pitch, hand, female gender, and class.
 
 Validation requires OD > bore, clearance diameter > thread diameter, and `bore/2 < clampX-clearance/2` with `clampX+clearance/2 < OD/2`, so neither cylindrical hole intersects the shaft bore or the radial exterior edges. The slit width must be less than the bore diameter and must leave a positive arm thickness at the outermost clearance-cylinder edge. The clearance hole must fit strictly between both end faces and their chamfers. A chamfer must be smaller than half the radial wall and half the width; derived dimensions must be finite.
+
+The resolved JSON and hole dimensions contain `leftHanded: false` by default. `_lefthanded` selects `true` and `_righthanded` selects `false`. Repeated or conflicting hand flags are rejected. The old `mount(...)` and `threadhand(...)` selector tokens and `mount`/`threadHand` JSON properties are rejected.

@@ -28,6 +28,20 @@ const lengths = {
   rearchamfer: "rearCornerChamfer",
 } as const
 
+const flags = {
+  backfaceplain: "backFacePlain",
+  plainbackface: "backFacePlain",
+  backfaceholes: "backFaceHoles",
+  backfacescrews: "backFaceScrews",
+  round: "roundShaft",
+  roundshaft: "roundShaft",
+  dshaft: "dShaft",
+  chamfered: "chamfered",
+  stepped: "stepped",
+  nowires: "noWires",
+  wirestubs: "wireStubs",
+} as const
+
 export function parseNemaMotorModelParams(raw: RawModelprinterParams) {
   const tokens = normalizeNemaMotorModelString(raw.string).split("_")
   const match = tokens[0]?.match(/^nema(8|17|23|34)$/i)
@@ -45,31 +59,15 @@ export function parseNemaMotorModelParams(raw: RawModelprinterParams) {
     if (name in lengths) {
       property = lengths[name as keyof typeof lengths]
       parsed = value
-    } else if (
-      ["backfaceholes", "backfacescrews", "plainbackface"].includes(name)
-    ) {
+    } else if (name in flags) {
       if (value) throw new Error(`NEMA flag "${name}" does not accept a value`)
-      property = "backFace"
-      parsed =
-        name === "backfaceholes"
-          ? "holes"
-          : name === "backfacescrews"
-            ? "screws"
-            : "plain"
-    } else if (["wirestubs", "nowires", "jstph", "jstsh"].includes(name)) {
-      const isJst = name === "jstph" || name === "jstsh"
-      if ((isJst && !/^[1-9][0-9]*$/.test(value)) || (!isJst && value))
+      property = flags[name as keyof typeof flags]
+      parsed = true
+    } else if (name === "jstph" || name === "jstsh") {
+      if (!/^[1-9][0-9]*$/.test(value))
         throw new Error(`Invalid wire connection token "${token}"`)
       property = "wireConnection"
-      parsed = isJst
-        ? `jst-${name.slice(3)}-${value}`
-        : name === "nowires"
-          ? "none"
-          : "stubs"
-    } else if (name === "stepped" || name === "chamfered") {
-      if (value) throw new Error(`NEMA flag "${name}" does not accept a value`)
-      property = "cornerProfile"
-      parsed = name
+      parsed = `jst-${name.slice(3)}-${value}`
     } else if (name === "wirecount") {
       property = "wireCount"
       if (!/^\d+$/.test(value)) throw new Error("wirecount requires an integer")
@@ -82,20 +80,10 @@ export function parseNemaMotorModelParams(raw: RawModelprinterParams) {
       if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:deg)?$/i.test(value))
         throw new Error(`${name} requires a numeric angle in degrees`)
       parsed = Number(value.replace(/deg$/i, ""))
-    } else if (
-      ["round", "dshaft", "throughholes", "blindholes"].includes(name)
-    ) {
+    } else if (name === "throughholes" || name === "blindholes") {
       if (value) throw new Error(`NEMA flag "${name}" does not accept a value`)
-      property =
-        name === "round" || name === "dshaft"
-          ? "shaftShape"
-          : "mountingHoleThrough"
-      parsed =
-        name === "round"
-          ? "round"
-          : name === "dshaft"
-            ? "d"
-            : name === "throughholes"
+      property = "mountingHoleThrough"
+      parsed = name === "throughholes"
     } else throw new Error(`Unknown NEMA motor token "${token}"`)
     if (property in props)
       throw new Error(`NEMA property "${property}" is set more than once`)

@@ -1,12 +1,14 @@
 # Cable grommet model strings
 
 ```
-cablegrommet_panelhole20mm_id10mm_od24mm_h8mm_groovew3mm_grooved2mm_shape(symmetricring)
+cablegrommet_panelhole20mm_id10mm_od24mm_h8mm_groovew3mm_grooved2mm_symmetricring
 ```
 
 This custom nominal protection ring uses two equal circular flanges and a
 centered annular panel groove. It selects no supplier series or dimensional
-standard. `shape(symmetricring)` is the sole shape and defaults when omitted.
+standard. The `symmetricRing` boolean defaults to `true`; `symmetricring` is a
+value-free flag. Valued flags, old `shape(...)` tokens and `shape` properties
+are rejected.
 The six dimensions are required; no physical size is inferred.
 
 | Token | Property | Meaning |
@@ -17,11 +19,12 @@ The six dimensions are required; no physical size is inferred.
 | `h` | `height` | Overall axial height |
 | `groovew` | `grooveWidth` | Axial groove width / nominal panel thickness |
 | `grooved` | `grooveDepth` | Radial groove depth, not a diametral reduction |
+| `symmetricring` | `symmetricRing` | Value-free flag, defaults to `true` |
 
 The lowercase property spellings in the table also work as string tokens. All
 lengths accept numbers in millimeters or unit strings (`mm`, `cm`, `m`, `in`,
 `inch`, `mil`, `ft`, `feet`) and normalize to millimeters. Tokens, aliases, and
-selectors are case insensitive. Repeated properties and unknown tokens fail.
+flags are case insensitive. Repeated properties and unknown tokens fail.
 
 The ring axis is Z. Its origin is the bore center in the panel midplane. The
 body spans `-height/2 .. +height/2`; the groove spans

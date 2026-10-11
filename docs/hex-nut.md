@@ -26,7 +26,7 @@ one untoleranced nominal visualization, not a manufactured tolerance model.
 Exactly one of `m` or `imperial(...)` is required. ISO, DIN and ASME family flags default by size as above. `threadpitch` can restate the
 coarse pitch, using a millimeter number or complete numeric unit string (`mm`,
 `cm`, `m`, `in`, `inch`, `mil`, `ft`, `feet`); all lengths normalize to mm. A
-contradictory/fine pitch is rejected. `threadhand(right)` and `threadclass(6H)`
+contradictory/fine pitch is rejected. `righthanded` and `threadclass(6H)`
 are fixed defaults. Other hands/classes and washer-face variants require a
 separate contract. `showThreads` defaults true; `threads`/`nothreads` are
 value-free visibility flags. Strings are case insensitive; the normalized

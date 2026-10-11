@@ -1,6 +1,6 @@
 # Button screw parameter contract
 
-`buttonscrew_m3_l10mm` selects ISO 7380-1:2022 (second edition) by default.
+`buttonscrew_m3_l10mm_hexsocket_fullthread_righthanded` selects ISO 7380-1:2022 (second edition) by default.
 The optional value-free flag in `buttonscrew_iso7380-1_m3_l10mm` selects the
 same dimensions and normalizes to `iso73801: true`. The schemas reject false
 ISO flags and the legacy `standard` property; `standard(...)` selectors,
@@ -27,8 +27,13 @@ is not claimed. Longer or partially threaded screws require a separate contract.
 
 `m` and `l`/`length` are required. Length inputs accept millimeter numbers or
 complete numeric strings with `mm`, `cm`, `m`, `in`, `inch`, `mil`, `ft`, or
-`feet`; JSON normalizes them to mm. Selectors `drive(hexsocket)`, `thread(full)`,
-`threadhand(right)`, and `threadclass(6g)` have those fixed defaults.
+`feet`; JSON normalizes them to mm. The value-free flags `hexsocket` and
+`fullthread` directly set the boolean props `hexSocket: true` and
+`fullThread: true`; both fixed features default true. `righthanded` sets
+`leftHanded: false`, its default and the only supported handedness in this family.
+`lefthanded` is rejected. `threadclass(6g)` retains the ISO thread-class designation.
+The former drive/thread/hand selector tokens and corresponding string properties
+are rejected. Repeated and conflicting flags are rejected before schema validation.
 `threadpitch` may explicitly restate the coarse pitch, including equivalent
 units; fine pitch is rejected. `threads`/`nothreads` control `showThreads`, which
 defaults true. Flags have no value. Duplicate tokens, alias conflicts, malformed

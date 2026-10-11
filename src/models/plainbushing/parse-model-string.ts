@@ -1,5 +1,3 @@
-import { expandModelStringFlags } from "../../utils/model-string-flags"
-import { stringFlags } from "./string-flags"
 import type { RawModelprinterParams } from "../../parse-model-string"
 import { plainBushingModelDefinitionSchema } from "./schema"
 import { splitModelStringTokens } from "../../split-model-string-tokens"
@@ -15,9 +13,7 @@ const lengths = {
 } as const
 
 export function parsePlainBushingModelParams(raw: RawModelprinterParams) {
-  const tokens = splitModelStringTokens(
-    expandModelStringFlags(raw.string, stringFlags),
-  )
+  const tokens = splitModelStringTokens(raw.string)
   if (raw.fn !== "plainbushing" || tokens[0]?.toLowerCase() !== "plainbushing")
     throw new Error("Expected plainbushing without an inline value")
   const props: Record<string, unknown> = { fn: "plainbushing" }
@@ -31,11 +27,10 @@ export function parsePlainBushingModelParams(raw: RawModelprinterParams) {
     if (Object.hasOwn(lengths, name)) {
       property = lengths[name as keyof typeof lengths]
       parsed = value
-    } else if (name === "style") {
-      property = "style"
-      const style = value.match(/^\(([a-z]+)\)$/i)
-      if (!style) throw new Error("Style requires a parenthesized value")
-      parsed = style[1]!.toLowerCase()
+    } else if (name === "plainclosed") {
+      property = "plainClosed"
+      if (value !== "") throw new Error("plainclosed is a value-free flag")
+      parsed = true
     } else throw new Error(`Unknown plain bushing token "${token}"`)
     if (Object.hasOwn(props, property))
       throw new Error(

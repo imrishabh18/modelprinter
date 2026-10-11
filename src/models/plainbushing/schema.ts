@@ -17,7 +17,7 @@ const shape = {
   outerDiameter: positiveLength,
   /** Overall end-plane distance, including the chamfers. */
   length: positiveLength,
-  style: z.literal("plainclosed").default("plainclosed"),
+  plainClosed: z.literal(true).default(true),
   /** Equal axial/radial setbacks of all four 45-degree bore/outside rim chamfers. */
   edgeChamfer: length.refine((value) => value >= 0).default(0),
 }

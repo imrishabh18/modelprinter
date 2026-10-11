@@ -268,7 +268,7 @@ const shape = {
   metricSize: hexNutMetricSizeSchema.optional(),
   imperialSize: hexNutImperialSizeSchema.optional(),
   threadPitch: length.optional(),
-  threadHand: z.literal("right").default("right"),
+  rightHanded: z.literal(true).default(true),
   threadClass: z.enum(["6H", "2B"]).optional(),
   showThreads: z.boolean().default(true),
 }

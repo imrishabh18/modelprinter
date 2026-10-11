@@ -1,13 +1,9 @@
-import { expandModelStringFlags } from "../../utils/model-string-flags"
-import { stringFlags } from "./string-flags"
 import { buttonScrewModelDefinitionSchema } from "./schema"
 import type { RawModelprinterParams } from "../../parse-model-string"
 import { splitModelStringTokens } from "../../split-model-string-tokens"
 
 export function parseButtonScrewModelParams(raw: RawModelprinterParams) {
-  const tokens = splitModelStringTokens(
-    expandModelStringFlags(raw.string, stringFlags),
-  )
+  const tokens = splitModelStringTokens(raw.string)
   if (raw.fn !== "buttonscrew" || tokens[0]?.toLowerCase() !== "buttonscrew")
     throw new Error("Expected buttonscrew without an inline argument")
   const props: Record<string, unknown> = { fn: "buttonscrew" }
@@ -17,11 +13,14 @@ export function parseButtonScrewModelParams(raw: RawModelprinterParams) {
     threadpitch: "threadPitch",
   } as const
   const selectors = {
-    drive: "drive",
-    thread: "thread",
-    threadhand: "threadHand",
     threadclass: "threadClass",
   } as const
+  const booleanFlags: Record<string, { property: string; value: boolean }> = {
+    hexsocket: { property: "hexSocket", value: true },
+    fullthread: { property: "fullThread", value: true },
+    righthanded: { property: "leftHanded", value: false },
+    lefthanded: { property: "leftHanded", value: true },
+  }
   for (const token of tokens.slice(1)) {
     if (token.toLowerCase() === "iso7380-1") {
       if ("iso73801" in props)
@@ -35,11 +34,16 @@ export function parseButtonScrewModelParams(raw: RawModelprinterParams) {
     const value = match[2]!
     let property: string
     let parsed: unknown = value
-    if (name === "m") {
+    if (Object.hasOwn(booleanFlags, name)) {
+      if (value) throw new Error(`Flag "${name}" does not accept a value`)
+      property = booleanFlags[name]!.property
+      parsed = booleanFlags[name]!.value
+    } else if (name === "m") {
       property = "metricSize"
       parsed = `M${value}`
-    } else if (name in lengths) property = lengths[name as keyof typeof lengths]
-    else if (name in selectors) {
+    } else if (Object.hasOwn(lengths, name))
+      property = lengths[name as keyof typeof lengths]
+    else if (Object.hasOwn(selectors, name)) {
       property = selectors[name as keyof typeof selectors]
       if (!/^\([^()]+\)$/.test(value))
         throw new Error(`Expected a parenthesized ${name}`)

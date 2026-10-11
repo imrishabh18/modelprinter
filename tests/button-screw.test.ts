@@ -20,10 +20,10 @@ test("button screw defaults to ISO 7380-1 dimensions and public registry", () =>
     iso73801: true,
     metricSize: "M3",
     length: 10,
-    drive: "hexsocket",
-    thread: "full",
+    hexSocket: true,
+    fullThread: true,
     threadPitch: 0.5,
-    threadHand: "right",
+    leftHanded: false,
     threadClass: "6g",
     showThreads: true,
   })

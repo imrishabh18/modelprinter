@@ -1,5 +1,3 @@
-import { expandModelStringFlags } from "../../utils/model-string-flags"
-import { stringFlags } from "./string-flags"
 import { parseGearToken } from "../../gear-parameter-schemas"
 import type { RawModelprinterParams } from "../../parse-model-string"
 import { splitModelStringTokens } from "../../split-model-string-tokens"
@@ -27,9 +25,7 @@ const lengths = {
 } as const
 
 export function parseTSlotExtrusionModelParams(raw: RawModelprinterParams) {
-  const tokens = splitModelStringTokens(
-    expandModelStringFlags(raw.string, stringFlags),
-  )
+  const tokens = splitModelStringTokens(raw.string)
   if (raw.fn !== "tslotextrusion" || tokens[0]?.toLowerCase() !== raw.fn)
     throw new Error("Expected tslotextrusion without an inline value")
   const props: Record<string, unknown> = { fn: "tslotextrusion" }
@@ -38,11 +34,10 @@ export function parseTSlotExtrusionModelParams(raw: RawModelprinterParams) {
     let property: string
     let parsed: unknown = value
     if (name in lengths) property = lengths[name as keyof typeof lengths]
-    else if (name === "profile") {
-      property = "profile"
-      const match = value.match(/^\(([a-z]+)\)$/i)
-      if (!match) throw new Error("Profile requires one parenthesized identity")
-      parsed = match[1]!.toLowerCase()
+    else if (name === "fourtsolid") {
+      property = "fourTSolid"
+      if (value !== "") throw new Error("fourtsolid is a value-free flag")
+      parsed = true
     } else throw new Error(`Unknown T-slot extrusion token "${token}"`)
     if (property in props)
       throw new Error(`T-slot extrusion property "${property}" is repeated`)

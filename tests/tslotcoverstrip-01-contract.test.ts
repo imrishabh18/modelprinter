@@ -6,7 +6,7 @@ import {
   getTSlotCoverStripDimensions,
 } from "../src"
 const source =
-  "tslotcoverstrip_l100mm_w8mm_t1mm_stemw5.8mm_stemh2mm_barbw6.2mm_profile(tee)"
+  "tslotcoverstrip_l100mm_w8mm_t1mm_stemw5.8mm_stemh2mm_barbw6.2mm_tee"
 const props = {
   length: 100,
   width: 8,
@@ -17,7 +17,7 @@ const props = {
   barbHeight: 0.5,
   tee: true,
 } as const
-test("tslotcoverstrip complete roadmap contract and public schema roundtrip", () => {
+test("tslotcoverstrip complete flag contract and public schema roundtrip", () => {
   const expected = { fn: "tslotcoverstrip" as const, ...props }
   expect(mp.string(source).json()).toEqual(expected)
   expect(modelDefinitionSchema.parse(expected)).toEqual(expected)

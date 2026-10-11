@@ -8,7 +8,7 @@ import {
 /** Compile face-relative feature language to panel-local coordinates. */
 export function parseSheetMetalFeature(
   feature: string,
-  profile: SheetMetalModelProps["profile"],
+  flags: Pick<SheetMetalModelProps, "plate" | "angle" | "channel">,
 ): SheetMetalHole {
   const match = feature.match(/^(hole|slot)[1-9]\d*\(([^()]+)\)$/)
   if (!match) throw new Error(`Invalid sheet metal feature "${feature}"`)
@@ -43,10 +43,10 @@ export function parseSheetMetalFeature(
     throw new Error(`Specify exactly one face in ${feature}`)
   const face = faces[0]!
   if (
-    (face === "angledface" && profile !== "angle") ||
-    (["leftface", "rightface"].includes(face) && profile !== "channel")
+    (face === "angledface" && !flags.angle) ||
+    (["leftface", "rightface"].includes(face) && !flags.channel)
   )
-    throw new Error(`No ${face} on ${profile}`)
+    throw new Error(`No ${face} on the selected sheet metal form`)
   for (const [a, b] of [
     ["leftofcenter", "rightofcenter"],
     ["abovecenter", "belowcenter"],
@@ -72,7 +72,7 @@ export function parseSheetMetalFeature(
       throw new Error(`Hole requires r or d in ${feature}`)
     return sheetMetalHoleSchema.parse({
       ...position,
-      shape: "round",
+      round: true,
       diameter: "r" in values ? 2 * distance("r") : distance("d"),
     })
   }
@@ -83,7 +83,7 @@ export function parseSheetMetalFeature(
   if (length < width) throw new Error("Slot length must be at least its width")
   return sheetMetalHoleSchema.parse({
     ...position,
-    shape: "slot",
+    slot: true,
     length,
     width,
     axis: (panel === "base") === !("vertical" in values) ? "u" : "v",

@@ -11,13 +11,13 @@ import {
 
 test("flanged bushing roadmap example, public registry and overall length convention", () => {
   const source =
-    "flangedbushing_id8mm_od12mm_flangeod18mm_l15mm_flangethickness2mm_style(plainclosed)"
+    "flangedbushing_id8mm_od12mm_flangeod18mm_l15mm_flangethickness2mm_plainclosed"
   const builder = mp.string(source)
   expect(builder.params()).toMatchObject({
     id: "8mm",
     flangeod: "18mm",
     flangethickness: "2mm",
-    style: "(plainclosed)",
+    plainclosed: true,
   })
   const expected = {
     fn: "flangedbushing",
@@ -26,7 +26,7 @@ test("flanged bushing roadmap example, public registry and overall length conven
     flangeDiameter: 18,
     length: 15,
     flangeThickness: 2,
-    style: "plainclosed",
+    plainClosed: true,
   } as const
   expect(builder.json()).toEqual(expected)
   expect(parseModelString(source)).toEqual(expected)
@@ -69,12 +69,12 @@ test("flanged bushing default style and normalized length aliases", () => {
     flangeDiameter: 18,
     length: 15,
     flangeThickness: 2,
-    style: "plainclosed",
+    plainClosed: true,
   })
   expect(
     mp
       .string(
-        "FLANGEDBUSHING_innerdiameter8MM_outerdiameter1.2CM_flangediameter18mm_length15mm_flangethickness0.2cm_STYLE(PLAINCLOSED)",
+        "FLANGEDBUSHING_innerdiameter8MM_outerdiameter1.2CM_flangediameter18mm_length15mm_flangethickness0.2cm_PLAINCLOSED",
       )
       .json(),
   ).toMatchObject({
@@ -83,7 +83,7 @@ test("flanged bushing default style and normalized length aliases", () => {
     flangeDiameter: 18,
     length: 15,
     flangeThickness: 2,
-    style: "plainclosed",
+    plainClosed: true,
   })
   expect(
     getFlangedBushingDimensions({
@@ -109,13 +109,13 @@ test("flanged bushing rejects duplicate aliases, malformed tokens and unsupporte
     "l15mm",
     "length15mm",
     "flangethickness2mm",
-    "style(plainclosed)_style(plainclosed)",
+    "plainclosed_plainclosed",
     "style(open)",
     "style(ball)",
     "style",
     "stylePLAINCLOSED",
-    "style(plainclosed)junk",
-    "style(plainclosed)(plainclosed)",
+    "plainclosedjunk",
+    "plainclosed(plainclosed)",
     "edgechamfer0.5mm",
     "flangethickness(2mm)",
     "flangethickness2mmjunk",
@@ -140,7 +140,7 @@ test("flanged bushing rejects duplicate aliases, malformed tokens and unsupporte
     "flangedbushing_id8mmjunk_od12mm_flangeod18mm_l15mm_flangethickness2mm",
     "flangedbushing_id8mm_od12mm_flangeod18mm_l1e2_flangethickness2mm",
     `${base}_style(plainclosed`,
-    `${base}__style(plainclosed)`,
+    `${base}__plainclosed`,
   ])
     expect(() => mp.string(source).json()).toThrow()
 })
@@ -187,5 +187,39 @@ test("flanged bushing direct schema compatibility and complete finite lengths", 
   }
   expect(() =>
     getFlangedBushingDimensions({ ...base, flangeThickness: 15 }),
+  ).toThrow()
+})
+
+test("flangedbushing uses a direct boolean flag and rejects legacy selectors", () => {
+  const base =
+    "flangedbushing_id8mm_od12mm_flangeod18mm_l15mm_flangethickness2mm"
+  const omitted = mp.string(base).json()
+  if (omitted.fn !== "flangedbushing") throw new Error("Unexpected model")
+  expect(omitted.plainClosed).toBe(true)
+  expect(omitted).not.toHaveProperty("style")
+  expect(mp.string(base + "_plainclosed").json()).toEqual(omitted)
+  expect(mp.string((base + "_plainclosed").toUpperCase()).json()).toEqual(
+    omitted,
+  )
+  expect(mp.string(base + "_plainclosed").params()).toMatchObject({
+    plainclosed: true,
+    string: base + "_plainclosed",
+  })
+  for (const suffix of [
+    "plainclosed_plainclosed",
+    "plainclosed1",
+    "plainclosed(true)",
+    "plainclosed(false)",
+    "style(plainclosed)",
+    "style(unsupported)",
+  ])
+    expect(() => mp.string(base + "_" + suffix).json()).toThrow()
+  const { fn, ...props } = omitted
+  for (const value of [false, "true", 1, null])
+    expect(() =>
+      flangedBushingModelPropsSchema.parse({ ...props, plainClosed: value }),
+    ).toThrow()
+  expect(() =>
+    flangedBushingModelPropsSchema.parse({ ...props, style: "plainclosed" }),
   ).toThrow()
 })
