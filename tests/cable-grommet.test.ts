@@ -9,7 +9,7 @@ import {
 } from "../src"
 
 const example =
-  "cablegrommet_panelhole20mm_id10mm_od24mm_h8mm_groovew3mm_grooved2mm_shape(symmetricring)"
+  "cablegrommet_panelhole20mm_id10mm_od24mm_h8mm_groovew3mm_grooved2mm_symmetricring"
 
 test("cable grommet roadmap example, registry and union", () => {
   const builder = mp.string(example)
@@ -27,7 +27,7 @@ test("cable grommet roadmap example, registry and union", () => {
     height: 8,
     grooveWidth: 3,
     grooveDepth: 2,
-    shape: "symmetricring",
+    symmetricRing: true,
   })
   expect(modelDefinitionSchema.parse(model)).toEqual(model)
   expect(modelprinter.getModelNames()).toContain("cablegrommet")
@@ -86,15 +86,15 @@ test("cable grommet rejects conflicting contracts and malformed strings", () => 
     example.replace("id10mm", "id20mm"),
     example.replace("groovew3mm", "groovew8mm"),
     example.replace("grooved2mm", "grooved12mm"),
-    example.replace("shape(symmetricring)", "shape(split)"),
-    example.replace("shape(symmetricring)", "shapesymmetricring"),
+    example.replace("symmetricring", "shape(split)"),
+    example.replace("symmetricring", "shapesymmetricring"),
     example.replace("id10mm", "id"),
     example.replace("id10mm", "id1.0.1mm"),
     example.replace("id10mm", "id0mm"),
     example.replace("id10mm", "id-1mm"),
     example.replace("cablegrommet_", "cablegrommet2_"),
     `${example}_`,
-    example.replace("(symmetricring)", "((symmetricring))"),
+    example.replace("symmetricring", "symmetricring(true)"),
   ])
     expect(() => mp.string(source).json()).toThrow()
   expect(() =>
@@ -126,4 +126,38 @@ test("cable grommet direct schema enforces dimensions and strictness", () => {
     expect(() =>
       cableGrommetModelPropsSchema.parse({ ...props, ...changes }),
     ).toThrow()
+})
+
+test("cablegrommet uses a direct boolean flag and rejects legacy selectors", () => {
+  const base =
+    "cablegrommet_panelhole20mm_id10mm_od24mm_h8mm_groovew3mm_grooved2mm"
+  const omitted = mp.string(base).json()
+  if (omitted.fn !== "cablegrommet") throw new Error("Unexpected model")
+  expect(omitted.symmetricRing).toBe(true)
+  expect(omitted).not.toHaveProperty("shape")
+  expect(mp.string(base + "_symmetricring").json()).toEqual(omitted)
+  expect(mp.string((base + "_symmetricring").toUpperCase()).json()).toEqual(
+    omitted,
+  )
+  expect(mp.string(base + "_symmetricring").params()).toMatchObject({
+    symmetricring: true,
+    string: base + "_symmetricring",
+  })
+  for (const suffix of [
+    "symmetricring_symmetricring",
+    "symmetricring1",
+    "symmetricring(true)",
+    "symmetricring(false)",
+    "shape(symmetricring)",
+    "shape(unsupported)",
+  ])
+    expect(() => mp.string(base + "_" + suffix).json()).toThrow()
+  const { fn, ...props } = omitted
+  for (const value of [false, "true", 1, null])
+    expect(() =>
+      cableGrommetModelPropsSchema.parse({ ...props, symmetricRing: value }),
+    ).toThrow()
+  expect(() =>
+    cableGrommetModelPropsSchema.parse({ ...props, shape: "symmetricring" }),
+  ).toThrow()
 })

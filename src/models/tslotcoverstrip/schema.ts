@@ -77,7 +77,7 @@ export type TSlotCoverStripModelDefinition = z.output<
   typeof tSlotCoverStripModelDefinitionSchema
 >
 
-/** A continuous T-section groove cover: a broad top strip, narrow insertion stem, and wider rectangular retention bead at the stem tip. Length runs along +Z from Z=0. The cover underside mates at Y=0, its top is Y=thickness, and its inserted tip is Y=-stemHeight. barbHeight defaults to 0.5mm and is included in stemHeight. _tee is the value-free profile flag; _profile(tee) is accepted as the roadmap alias. All normalized dimensions are millimeters. */
+/** A continuous T-section groove cover: a broad top strip, narrow insertion stem, and wider rectangular retention bead at the stem tip. Length runs along +Z from Z=0. The cover underside mates at Y=0, its top is Y=thickness, and its inserted tip is Y=-stemHeight. barbHeight defaults to 0.5mm and is included in stemHeight. _tee is the value-free profile flag. All normalized dimensions are millimeters. */
 export function getTSlotCoverStripDimensions(
   input: TSlotCoverStripModelPropsInput,
 ) {

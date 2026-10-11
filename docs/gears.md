@@ -104,10 +104,14 @@ getWormGearDimensions({ module: 1, pitchDiameter: 10, starts: 2 })
 | `backlash` | 0 mm | `backlash` | Nonnegative axial tooth thinning at the pitch cylinder |
 | `clearance` | 0.25 mm | `clearance` | Nonnegative additional radial dedendum |
 | `boreDiameter` | 0 mm | `bore`, `borediameter` | Zero disables the through bore |
-| `handedness` | `"right"` | `right`, `left` | Mutually exclusive flags without values |
+| `leftHanded` | `false` | `right`, `left` | Boolean: `left` sets true and `right` sets false; duplicates and conflicts are rejected |
 | `phase` | 0° | `phase` | Rotation about +Z |
 | `radialSegments` | 96 | `segments` | Integer 24–256, divisible by four |
 | `segmentsPerTurn` | 32 | `turnsegments` | Integer 12–128; subdivisions per helical revolution |
+
+Direct props use `leftHanded: true` for left hand and `false` for right hand.
+The former `handedness` property and selector tokens such as `handedness(left)`
+are rejected.
 
 The worm axis is +Z and the body extends from Z=0 to Z=`length`. A right-hand
 thread advances from +X toward +Y as Z increases; a left-hand thread reverses
@@ -161,7 +165,7 @@ getHelicalGearDimensions({ toothCount: 24, module: 1, helixAngle: 25 })
 | Additional property | Default | Model-string modifier | Meaning |
 | --- | --- | --- | --- |
 | `helixAngle` | 20° | `ha`, `helixangle` | Finite unsigned angle to the axis at the pitch cylinder, 0 ≤ angle < 90° |
-| `handedness` | `"right"` | `right`, `left` | Mutually exclusive flags, following the worm convention |
+| `leftHanded` | `false` | `right`, `left` | Boolean, following the worm convention; duplicates and conflicts are rejected |
 | `segmentsPerTurn` | 32 | `turnsegments` | Integer 12–128; minimum subdivisions per full turn of twist |
 
 Inline tooth count uses `helicalgear24`; `teeth`, `segments`, and every spur
@@ -201,13 +205,13 @@ transverse module and pressure angle equal to the worm's axial values, its
 helix angle equal to the worm's lead angle, and use the same hand:
 
 ```ts
-const worm = { module: 1, pitchDiameter: 10, starts: 2, pressureAngle: 20, handedness: "right" as const }
+const worm = { module: 1, pitchDiameter: 10, starts: 2, pressureAngle: 20, leftHanded: false }
 const wheel = helicalGearModelPropsSchema.parse({
   toothCount: 32,
   module: worm.module,
   pressureAngle: worm.pressureAngle,
   helixAngle: getWormGearDimensions(worm).leadAngle,
-  handedness: worm.handedness,
+  leftHanded: worm.leftHanded,
 })
 ```
 

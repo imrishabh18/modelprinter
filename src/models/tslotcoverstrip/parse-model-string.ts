@@ -20,9 +20,6 @@ const aliases: Record<string, string> = {
 const flags: Record<string, string> = {
   tee: "tee",
 }
-const literals: Record<string, readonly [string, string]> = {
-  profile: ["tee", "tee"],
-}
 export function parseTSlotCoverStripModelParams(raw: RawModelprinterParams) {
   const [name, ...tokens] = splitModelStringTokens(raw.string)
   if (raw.fn !== "tslotcoverstrip" || name?.toLowerCase() !== "tslotcoverstrip")
@@ -43,11 +40,6 @@ export function parseTSlotCoverStripModelParams(raw: RawModelprinterParams) {
       if (value !== "")
         throw new Error(`tslotcoverstrip flag "${key}" takes no value`)
       assign(flags[key]!, true)
-    } else if (Object.hasOwn(literals, key)) {
-      const [literal, property] = literals[key]!
-      if (value.toLowerCase() !== `(${literal})`)
-        throw new Error(`Expected tslotcoverstrip ${key}(${literal})`)
-      assign(property, true)
     } else if (Object.hasOwn(aliases, key) && value) {
       const property = aliases[key]!
       assign(property, property === "pinCount" ? Number(value) : value)

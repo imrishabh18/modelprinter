@@ -9,14 +9,14 @@ const shape = {
   /** Unsigned pitch-cylinder helix angle to +Z, in degrees. */
   helixAngle: z.number().finite().min(0).lt(90).default(20),
   /** Right-hand teeth advance counterclockwise as Z increases. */
-  handedness: z.enum(["right", "left"]).default("right"),
+  leftHanded: z.boolean().default(false),
   segmentsPerTurn: z.number().int().min(12).max(128).default(32),
 }
 
 type ResolvedHelicalGearProps = z.output<z.ZodObject<typeof shape>>
 
 function dimensions(props: ResolvedHelicalGearProps) {
-  const { helixAngle, handedness, segmentsPerTurn, ...spur } = props
+  const { helixAngle, leftHanded, segmentsPerTurn, ...spur } = props
   const d = getSpurGearDimensions(spur)
   const beta = (helixAngle * Math.PI) / 180
   return {
@@ -33,7 +33,7 @@ function dimensions(props: ResolvedHelicalGearProps) {
     twistAngle:
       helixAngle === 0
         ? 0
-        : ((handedness === "right" ? 1 : -1) *
+        : ((leftHanded ? -1 : 1) *
             (((2 * props.faceWidth) / d.pitchDiameter) *
               Math.tan(beta) *
               180)) /
@@ -45,7 +45,7 @@ function validate(
   props: ResolvedHelicalGearProps & { fn?: string },
   context: z.RefinementCtx,
 ) {
-  const { fn, helixAngle, handedness, segmentsPerTurn, ...spur } = props
+  const { fn, helixAngle, leftHanded, segmentsPerTurn, ...spur } = props
   const result = spurGearModelPropsSchema.safeParse(spur)
   if (!result.success) {
     for (const issue of result.error.issues) context.addIssue(issue)
@@ -53,7 +53,7 @@ function validate(
   }
   if (
     Object.values(
-      dimensions({ ...result.data, helixAngle, handedness, segmentsPerTurn }),
+      dimensions({ ...result.data, helixAngle, leftHanded, segmentsPerTurn }),
     ).some((value) => !Number.isFinite(value))
   )
     context.addIssue({

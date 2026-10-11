@@ -45,7 +45,8 @@ export const nemaMotorDimensions = {
     pilotLength: 1.5,
     shaftDiameter: 4,
     shaftLength: 15,
-    shaftShape: "round",
+    roundShaft: true,
+    dShaft: false,
     shaftFlatDepth: 0.5,
     shaftFlatLength: 10,
     shaftFlatAngle: 0,
@@ -67,7 +68,8 @@ export const nemaMotorDimensions = {
     pilotLength: 2,
     shaftDiameter: 5,
     shaftLength: 24,
-    shaftShape: "d",
+    roundShaft: false,
+    dShaft: true,
     shaftFlatDepth: 0.5,
     shaftFlatLength: 15,
     shaftFlatAngle: 0,
@@ -89,7 +91,8 @@ export const nemaMotorDimensions = {
     pilotLength: 1.6,
     shaftDiameter: 6.35,
     shaftLength: 20.6,
-    shaftShape: "d",
+    roundShaft: false,
+    dShaft: true,
     shaftFlatDepth: 0.5,
     shaftFlatLength: 15,
     shaftFlatAngle: 0,
@@ -114,7 +117,8 @@ export const nemaMotorDimensions = {
     pilotLength: 1.6,
     shaftDiameter: 14,
     shaftLength: 32,
-    shaftShape: "round",
+    roundShaft: true,
+    dShaft: false,
     shaftFlatDepth: 0.5,
     shaftFlatLength: 15,
     shaftFlatAngle: 0,
@@ -128,15 +132,18 @@ export const nemaMotorDimensions = {
 const shape = {
   nemaSize: nemaSizeSchema,
   /** Rear cap at Z=-bodyLength: bare, open bores or installed cap screws. */
-  backFace: z.enum(["plain", "holes", "screws"]).optional(),
+  backFacePlain: z.boolean().optional(),
+  backFaceHoles: z.boolean().optional(),
+  backFaceScrews: z.boolean().optional(),
   backFaceHoleSpacing: positive.optional(),
   backFaceHoleDiameter: positive.optional(),
   backFaceHoleDepth: positive.optional(),
   backFaceScrewSize: metricBoltSizeSchema.optional(),
   /** Visual termination; the wireside reference exists even when hidden. */
-  wireConnection: z
-    .union([z.enum(["none", "stubs"]), jstMotorWireConnectionSchema])
-    .optional(),
+  noWires: z.boolean().optional(),
+  wireStubs: z.boolean().optional(),
+  /** JST catalog designation, mutually exclusive with the visible-wire flags. */
+  wireConnection: jstMotorWireConnectionSchema.optional(),
   /** Counterclockwise angle about local +Z; 0 is the +X side. */
   wireSideAngle: z.number().finite().optional(),
   wireLength: positive.optional(),
@@ -153,7 +160,8 @@ const shape = {
   /** Distance from mounting face Z=0 to shaft tip, including pilot height. */
   shaftLength: positive.optional(),
   shaftDiameter: positive.optional(),
-  shaftShape: z.enum(["round", "d"]).optional(),
+  roundShaft: z.boolean().optional(),
+  dShaft: z.boolean().optional(),
   /** Radial material removed from the +X side before rotation. */
   shaftFlatDepth: nonnegative.optional(),
   /** Flat extends back from the tip; leaves a round shoulder above the pilot. */
@@ -166,21 +174,70 @@ const shape = {
   bodyCornerChamfer: nonnegative.optional(),
   /** Rear outline is independent of the front mounting flange. */
   rearCornerChamfer: nonnegative.optional(),
-  cornerProfile: z.enum(["chamfered", "stepped"]).optional(),
+  chamfered: z.boolean().optional(),
+  stepped: z.boolean().optional(),
 }
-const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
+const resolve = (
+  p: z.output<z.ZodObject<typeof shape>>,
+  ctx: z.RefinementCtx,
+) => {
+  const select = <K extends keyof typeof p>(
+    flags: readonly K[],
+    fallback: K,
+  ) => {
+    const selected = flags.filter((flag) => p[flag] === true)
+    const specified = flags.some((flag) => p[flag] !== undefined)
+    if (selected.length > 1 || (specified && selected.length === 0))
+      ctx.addIssue({
+        code: "custom",
+        message: `Select exactly one of ${flags.join(", ")}`,
+      })
+    return selected[0] ?? fallback
+  }
+  const back = select(
+    ["backFacePlain", "backFaceHoles", "backFaceScrews"],
+    p.nemaSize === 34 ? "backFacePlain" : "backFaceScrews",
+  )
+  const shaft = select(
+    ["roundShaft", "dShaft"],
+    nemaMotorDimensions[p.nemaSize].roundShaft ? "roundShaft" : "dShaft",
+  )
+  const corner = select(
+    ["chamfered", "stepped"],
+    p.nemaSize === 34 ? "stepped" : "chamfered",
+  )
+  const wireSpecified =
+    p.noWires !== undefined ||
+    p.wireStubs !== undefined ||
+    p.wireConnection !== undefined
+  const wireSelections =
+    Number(p.noWires === true) +
+    Number(p.wireStubs === true) +
+    Number(p.wireConnection !== undefined)
+  if (wireSelections > 1 || (wireSpecified && wireSelections === 0))
+    ctx.addIssue({
+      code: "custom",
+      message:
+        "Select exactly one of noWires, wireStubs or a JST wireConnection",
+    })
   const d = nemaMotorDimensions[p.nemaSize]
   const backFaceScrewSize = p.backFaceScrewSize ?? d.backFaceScrewSize
   const screw = hexSocketBoltDimensions[backFaceScrewSize]
   return {
     nemaSize: p.nemaSize,
-    wireConnection: p.wireConnection ?? "stubs",
+    noWires: p.noWires === true,
+    wireStubs: p.wireStubs === true || !wireSpecified,
+    ...(p.wireConnection !== undefined
+      ? { wireConnection: p.wireConnection }
+      : {}),
     wireSideAngle:
       (((p.wireSideAngle ?? (p.nemaSize === 34 ? 90 : 0)) % 360) + 360) % 360,
     wireLength: p.wireLength ?? (p.nemaSize === 34 ? 25 : 6),
     wireDiameter: p.wireDiameter ?? (p.nemaSize === 34 ? 2 : 1.2),
     wireCount: p.wireCount ?? 4,
-    backFace: p.backFace ?? (p.nemaSize === 34 ? "plain" : "screws"),
+    backFacePlain: back === "backFacePlain",
+    backFaceHoles: back === "backFaceHoles",
+    backFaceScrews: back === "backFaceScrews",
     backFaceHoleSpacing:
       p.backFaceHoleSpacing ??
       ("backFaceHoleSpacing" in d
@@ -199,7 +256,8 @@ const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
     pilotLength: p.pilotLength ?? d.pilotLength,
     shaftDiameter: p.shaftDiameter ?? d.shaftDiameter,
     shaftLength: p.shaftLength ?? d.shaftLength,
-    shaftShape: p.shaftShape ?? d.shaftShape,
+    roundShaft: shaft === "roundShaft",
+    dShaft: shaft === "dShaft",
     shaftFlatDepth: p.shaftFlatDepth ?? d.shaftFlatDepth,
     shaftFlatLength: p.shaftFlatLength ?? d.shaftFlatLength,
     shaftFlatAngle: p.shaftFlatAngle ?? d.shaftFlatAngle,
@@ -207,9 +265,8 @@ const resolve = (p: z.output<z.ZodObject<typeof shape>>) => {
     rearCapLength: p.rearCapLength ?? d.rearCapLength,
     faceCornerChamfer: p.faceCornerChamfer ?? d.faceCornerChamfer,
     bodyCornerChamfer: p.bodyCornerChamfer ?? d.bodyCornerChamfer,
-    ...(p.nemaSize === 34 || p.cornerProfile !== undefined
-      ? { cornerProfile: p.cornerProfile ?? ("stepped" as const) }
-      : {}),
+    chamfered: corner === "chamfered",
+    stepped: corner === "stepped",
     ...("rearCornerChamfer" in d || p.rearCornerChamfer !== undefined
       ? {
           rearCornerChamfer:
@@ -226,22 +283,21 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
   const issue = (message: string) => ctx.addIssue({ code: "custom", message })
   const rearChamfer =
     p.rearCornerChamfer ??
-    (p.backFace === "plain" && p.mountingHoleThrough
+    (p.backFacePlain && p.mountingHoleThrough
       ? p.bodyCornerChamfer
       : p.faceCornerChamfer)
-  const rearEdge =
-    p.cornerProfile === "stepped" ? rearChamfer / Math.SQRT2 : rearChamfer
-  if (p.backFace !== "plain") {
+  const rearEdge = p.stepped ? rearChamfer / Math.SQRT2 : rearChamfer
+  if (!p.backFacePlain) {
     const screw = hexSocketBoltDimensions[p.backFaceScrewSize]
     const radius =
-      (p.backFace === "screws"
+      (p.backFaceScrews
         ? Math.max(p.backFaceHoleDiameter, screw.headDiameter)
         : p.backFaceHoleDiameter) / 2
     if (p.backFaceHoleSpacing <= 2 * radius)
       issue("Rear holes and screw heads must not overlap each other")
     if (
       p.backFaceHoleSpacing + 2 * radius >= p.bodyWidth ||
-      (p.cornerProfile === "stepped"
+      (p.stepped
         ? p.backFaceHoleSpacing + 2 * radius >= p.bodyWidth - 2 * rearEdge
         : p.bodyWidth - rearChamfer - p.backFaceHoleSpacing <=
           radius * Math.SQRT2)
@@ -249,16 +305,19 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
       issue("Rear holes and screw heads must fit entirely inside the rear face")
     if (p.backFaceHoleDepth >= p.rearCapLength)
       issue("Rear hole depth must be less than the rear cap length")
-    if (p.backFace === "screws" && p.backFaceHoleDiameter < screw.diameter)
+    if (p.backFaceScrews && p.backFaceHoleDiameter < screw.diameter)
       issue("Rear holes must accommodate the screw diameter")
   }
-  if (p.wireConnection === "stubs") {
+  if (p.wireStubs) {
     if (p.wireDiameter * p.wireCount * 1.5 > p.bodyWidth - 2 * rearEdge)
       issue("Wire bundle must fit on the cap side")
     if (p.wireDiameter >= p.rearCapLength)
       issue("Wire diameter must fit within the rear cap")
   }
-  const connector = getJstMotorConnector(p.wireConnection)
+  const connector =
+    p.wireConnection === undefined
+      ? undefined
+      : getJstMotorConnector(p.wireConnection)
   if (connector && p.bodyWidth - 2 * rearEdge < connector.bodyWidth)
     issue("JST header must fit on the motor side")
   const r = p.mountingHoleDiameter / 2
@@ -285,7 +344,7 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
     issue("Blind mounting hole depth must be less than the front cap length")
   if (
     p.mountingHoleThrough &&
-    (p.cornerProfile === "stepped"
+    (p.stepped
       ? p.bodyWidth / 2 -
           p.bodyCornerChamfer / Math.SQRT2 +
           Math.min(4, p.bodyCornerChamfer / Math.SQRT2 / 4) >=
@@ -297,7 +356,7 @@ const validate = (p: NemaMotorModelProps, ctx: z.RefinementCtx) => {
   if (p.shaftLength <= p.pilotLength)
     issue("Shaft tip must extend beyond the pilot")
   if (
-    p.shaftShape === "d" &&
+    p.dShaft &&
     (p.shaftFlatDepth <= 0 ||
       p.shaftFlatDepth >= p.shaftDiameter / 2 ||
       p.shaftFlatLength <= 0 ||
@@ -316,7 +375,7 @@ export const nemaMotorModelPropsSchema = z
 export const nemaMotorModelDefinitionSchema = z
   .object({ fn: z.literal("nema"), ...shape })
   .strict()
-  .transform(({ fn, ...props }) => ({ fn, ...resolve(props) }))
+  .transform(({ fn, ...props }, ctx) => ({ fn, ...resolve(props, ctx) }))
   .superRefine(validate)
 export type NemaMotorModelPropsInput = z.input<typeof nemaMotorModelPropsSchema>
 export type NemaMotorModelDefinition = z.output<

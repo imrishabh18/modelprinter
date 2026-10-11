@@ -17,7 +17,7 @@ const base = {
 
 test("compression spring roadmap example resolves defaults and custom dimensions", () => {
   const builder = mp.string(
-    "compressionspring_spec(custom)_od8mm_wire1mm_l20mm_turns8_active6_ends(closedground)_hand(right)_state(free)",
+    "compressionspring_custom_od8mm_wire1mm_l20mm_turns8_active6_closedground_righthanded_free",
   )
   expect(builder.params()).toMatchObject({
     od: "8mm",
@@ -28,12 +28,12 @@ test("compression spring roadmap example resolves defaults and custom dimensions
   const model = builder.json()
   expect(model).toEqual({
     fn: "compressionspring",
-    spec: "custom",
+    custom: true,
     ...base,
     activeTurns: 6,
-    ends: "closedground",
-    hand: "right",
-    state: "free",
+    closedGround: true,
+    leftHanded: false,
+    free: true,
   })
   expect(modelDefinitionSchema.parse(model)).toEqual(model)
   expect(modelprinter.getModelNames()).toContain("compressionspring")
@@ -58,9 +58,9 @@ test("compression spring roadmap example resolves defaults and custom dimensions
 test("compression spring units and mirrored winding preserve mounting datums", () => {
   expect(
     mp
-      .string("COMPRESSIONSPRING_OD0.8cm_WIRE0.1cm_LENGTH2cm_TURNS8_HAND(LEFT)")
+      .string("COMPRESSIONSPRING_OD0.8cm_WIRE0.1cm_LENGTH2cm_TURNS8_LEFTHANDED")
       .json(),
-  ).toMatchObject({ ...base, activeTurns: 6, hand: "left" })
+  ).toMatchObject({ ...base, activeTurns: 6, leftHanded: true })
   expect(
     compressionSpringModelPropsSchema.parse({ ...base, freeLength: "1in" })
       .freeLength,
@@ -78,7 +78,7 @@ test("compression spring units and mirrored winding preserve mounting datums", (
   }
   const right = getCompressionSpringCenterlinePoint(base, 0.25)
   const left = getCompressionSpringCenterlinePoint(
-    { ...base, hand: "left" },
+    { ...base, leftHanded: true },
     0.25,
   )
   expect(right.y).toBeCloseTo(3.5)
@@ -94,6 +94,22 @@ test("compression spring units and mirrored winding preserve mounting datums", (
 test("compression spring validates closed-ground counts, bore and solid clearance", () => {
   const source = "compressionspring_od8mm_wire1mm_l20mm_turns8"
   for (const invalid of [
+    ...[
+      "spec(custom)",
+      "ends(closedground)",
+      "hand(right)",
+      "hand(left)",
+      "state(free)",
+      "custom_custom",
+      "free_free",
+      "closedground_closedground",
+      "lefthanded_righthanded",
+      "righthanded_lefthanded",
+      "lefthanded_lefthanded",
+      "righthanded_righthanded",
+      "lefthanded(true)",
+      "custom(true)",
+    ].map((token) => source + "_" + token),
     "compressionspring",
     "compressionspring_od8mm_wire1mm_l20mm",
     `${source}_active7`,
@@ -118,6 +134,21 @@ test("compression spring validates closed-ground counts, bore and solid clearanc
     "compressionspring_od8mm_wire1mm_l20mmjunk_turns8",
   ])
     expect(() => mp.string(invalid).json()).toThrow()
+  for (const legacy of [
+    { spec: "custom" },
+    { ends: "closedground" },
+    { hand: "left" },
+    { state: "free" },
+  ])
+    expect(() =>
+      compressionSpringModelPropsSchema.parse({ ...base, ...legacy }),
+    ).toThrow()
+  expect(mp.string(source + "_righthanded").json()).toMatchObject({
+    leftHanded: false,
+  })
+  expect(mp.string(source + "_lefthanded").json()).toMatchObject({
+    leftHanded: true,
+  })
   for (const freeLength of [NaN, Infinity, 0, -1, 8, "20mm junk"])
     expect(() =>
       compressionSpringModelPropsSchema.parse({ ...base, freeLength }),

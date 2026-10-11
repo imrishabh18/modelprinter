@@ -13,9 +13,6 @@ const lengths: Record<string, string> = {
   cornerradius: "cornerRadius",
 }
 const flags: Record<string, string> = { flatframe: "flatFrame" }
-const selectors: Record<string, { value: string; property: string }> = {
-  profile: { value: "flatframe", property: "flatFrame" },
-}
 const integers: Record<string, string> = {}
 const tuples: Record<string, readonly [string, string]> = {}
 export function parseRectangularGasketModelParams(raw: RawModelprinterParams) {
@@ -38,11 +35,6 @@ export function parseRectangularGasketModelParams(raw: RawModelprinterParams) {
       value = match[2]!
     if (Object.hasOwn(lengths, key) && value) assign(lengths[key]!, value)
     else if (Object.hasOwn(flags, key) && !value) assign(flags[key]!, true)
-    else if (
-      Object.hasOwn(selectors, key) &&
-      value.toLowerCase() === `(${selectors[key]!.value})`
-    )
-      assign(selectors[key]!.property, true)
     else if (Object.hasOwn(integers, key) && /^\d+$/.test(value))
       assign(integers[key]!, Number(value))
     else if (Object.hasOwn(tuples, key)) {

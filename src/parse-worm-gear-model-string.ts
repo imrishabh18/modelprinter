@@ -28,7 +28,7 @@ export function parseWormGearModelParams(raw: RawModelprinterParams) {
     const [name, value] = parseGearToken(token)
     let property: string
     let parsed: unknown
-    if (name in lengths) {
+    if (Object.hasOwn(lengths, name)) {
       property = lengths[name as keyof typeof lengths]
       parsed = value
     } else if (["starts", "segments", "turnsegments"].includes(name)) {
@@ -44,8 +44,8 @@ export function parseWormGearModelParams(raw: RawModelprinterParams) {
       parsed = parseGearAngle(value, property)
     } else if (name === "right" || name === "left") {
       if (value) throw new Error(`Worm flag "${name}" does not accept a value`)
-      property = "handedness"
-      parsed = name
+      property = "leftHanded"
+      parsed = name === "left"
     } else throw new Error(`Unknown worm gear token "${token}"`)
     if (property in props)
       throw new Error(`Worm gear property "${property}" is set more than once`)

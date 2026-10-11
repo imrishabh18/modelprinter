@@ -10,7 +10,7 @@ import {
 import { parseHexBoltModelParams } from "../../src/models/hexbolt/parse-model-string"
 
 export const assertHexBolt = () => {
-  const builder = mp.string("hexbolt_m6_l25mm_thread(full)_drive(hex)")
+  const builder = mp.string("hexbolt_m6_l25mm_fullthread_hex")
   const model = builder.json()
   if (model.fn !== "hexbolt") throw new Error("Unexpected model family")
   expect(model).toMatchObject({
@@ -26,11 +26,11 @@ export const assertHexBolt = () => {
     iso4017: true,
     metricSize: "M6",
     length: 25,
-    thread: "full",
-    drive: "hex",
-    threadHand: "right",
+    fullThread: true,
+    hex: true,
+    leftHanded: false,
     threadClass: "6g",
-    threadGender: "male",
+    male: true,
     showThreads: true,
 
     ...hexBoltDimensions.M6,
@@ -43,14 +43,14 @@ export const assertHexBolt = () => {
   expect(modelDefinitionSchema.parse(model)).toEqual(model)
   expect(hexBoltModelDefinitionSchema.parse(model)).toEqual(model)
   expect(modelprinter.getModelNames()).toContain("hexbolt")
-  expect(mp.string("HEXBOLT_M6_length2.5cm_DRIVE(HEX)").json()).toEqual(model)
+  expect(mp.string("HEXBOLT_M6_length2.5cm_HEX").json()).toEqual(model)
   expect(
     mp
       .string(
-        "hexbolt_metricsize(m6)_l25mm_threadpitch1mm_threadhand(left)_nothreads",
+        "hexbolt_metricsize(m6)_l25mm_threadpitch1mm_lefthanded_nothreads",
       )
       .json(),
-  ).toMatchObject({ threadHand: "left", showThreads: false })
+  ).toMatchObject({ leftHanded: true, showThreads: false })
 
   for (const metricSize of ["M3", "M4", "M5", "M6"] as const) {
     const parsed = hexBoltModelPropsSchema.parse({

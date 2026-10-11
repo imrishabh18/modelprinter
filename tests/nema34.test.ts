@@ -20,7 +20,8 @@ test("NEMA34 resolves its envelope and assembly reference points", () => {
     pilotLength: 1.6,
     shaftDiameter: 14,
     shaftLength: 32,
-    shaftShape: "round",
+    roundShaft: true,
+    dShaft: false,
   })
   const { fn, ...props } = definition
   expect(nemaMotorModelPropsSchema.parse({ nemaSize: 34 })).toEqual(props)
@@ -64,8 +65,11 @@ test("NEMA34 rear profile and fasteners are independent of the front flange", ()
     rearCornerChamfer: 24,
     mountingHoleSpacing: 69.6,
     faceCornerChamfer: 2,
-    cornerProfile: "stepped",
-    backFace: "plain",
+    stepped: true,
+    chamfered: false,
+    backFacePlain: true,
+    backFaceHoles: false,
+    backFaceScrews: false,
     wireSideAngle: 90,
     wireLength: 25,
   })
@@ -95,7 +99,7 @@ test("NEMA34 wire exit follows the stepped body and stays consistent when hidden
   expect(visible.position.x).toBeCloseTo(27.2010101268, 5)
   expect(visible.position.y).toBeCloseTo(visible.position.x, 5)
   expect(visible.position.z).toBe(-69)
-  expect(
-    getNemaMotorReferencePoints({ ...p, wireConnection: "none" }).wireside,
-  ).toEqual(visible)
+  expect(getNemaMotorReferencePoints({ ...p, noWires: true }).wireside).toEqual(
+    visible,
+  )
 })

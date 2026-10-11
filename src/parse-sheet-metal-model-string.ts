@@ -25,8 +25,9 @@ export function parseSheetMetalModelParams(raw: RawModelprinterParams) {
       continue
     }
     if (["plate", "angle", "channel"].includes(token)) {
-      if (props.profile) throw new Error("Duplicate sheet metal profile")
-      props.profile = token
+      if (["plate", "angle", "channel"].some((flag) => flag in props))
+        throw new Error("Duplicate sheet metal form flag")
+      props[token] = true
       continue
     }
     const key = lengths[token[0]!]
@@ -40,7 +41,7 @@ export function parseSheetMetalModelParams(raw: RawModelprinterParams) {
     ...props,
   })
   definition.holes = features.map((feature) =>
-    parseSheetMetalFeature(feature, definition.profile),
+    parseSheetMetalFeature(feature, definition),
   )
   return definition
 }

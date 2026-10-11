@@ -1,5 +1,3 @@
-import { expandModelStringFlags } from "../../utils/model-string-flags"
-import { stringFlags } from "./string-flags"
 import { hexBoltModelDefinitionSchema } from "./schema"
 import type { RawModelprinterParams } from "../../parse-model-string"
 import { splitModelStringTokens } from "../../split-model-string-tokens"
@@ -9,11 +7,7 @@ const aliases: Record<string, string> = {
   metricsize: "metricSize",
   l: "length",
   length: "length",
-  thread: "thread",
-  drive: "drive",
-  threadhand: "threadHand",
   threadclass: "threadClass",
-  threadgender: "threadGender",
   diameter: "diameter",
   threadpitch: "threadPitch",
   headacrossflats: "headAcrossFlats",
@@ -31,20 +25,19 @@ const aliases: Record<string, string> = {
   headh: "headHeight",
   af: "headAcrossFlats",
 }
-const selectors = new Set([
-  "thread",
-  "drive",
-  "threadHand",
-  "threadClass",
-  "threadGender",
-])
+const selectors = new Set(["threadClass"])
+const booleanFlags: Record<string, { property: string; value: boolean }> = {
+  hex: { property: "hex", value: true },
+  fullthread: { property: "fullThread", value: true },
+  male: { property: "male", value: true },
+  lefthanded: { property: "leftHanded", value: true },
+  righthanded: { property: "leftHanded", value: false },
+}
 
 export const parseHexBoltModelParams = (raw: RawModelprinterParams) => {
   if (raw.fn !== "hexbolt")
     throw new Error(`Expected hexbolt params, got "${raw.fn}"`)
-  const [root, ...tokens] = splitModelStringTokens(
-    expandModelStringFlags(raw.string, stringFlags),
-  )
+  const [root, ...tokens] = splitModelStringTokens(raw.string)
   if (root?.toLowerCase() !== "hexbolt")
     throw new Error("The hexbolt function does not accept an inline value")
   const props: Record<string, unknown> = {}
@@ -60,13 +53,17 @@ export const parseHexBoltModelParams = (raw: RawModelprinterParams) => {
     const value = match?.[2]
     let property: string
     let parsed: unknown
-    if (key === "threads" || key === "nothreads") {
+    if (key && Object.hasOwn(booleanFlags, key)) {
+      if (value !== "") throw new Error(`Flag "${key}" does not accept a value`)
+      property = booleanFlags[key]!.property
+      parsed = booleanFlags[key]!.value
+    } else if (key === "threads" || key === "nothreads") {
       if (value !== "")
         throw new Error(`Token "${key}" does not accept a value`)
       property = "showThreads"
       parsed = key === "threads"
     } else {
-      property = key ? (aliases[key] ?? "") : ""
+      property = key && Object.hasOwn(aliases, key) ? aliases[key]! : ""
       if (!property || !value)
         throw new Error(`Unknown or missing hexbolt token "${token}"`)
       if (selectors.has(property)) {

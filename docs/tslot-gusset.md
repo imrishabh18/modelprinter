@@ -1,20 +1,21 @@
 # T-slot gusset
 
 ```text
-tslotgusset_w40mm_h40mm_t4mm_shape(righttriangle)_slots2_slot(5mm,12mm)_centers(12mm,28mm)
+tslotgusset_w40mm_h40mm_t4mm_righttriangle_slots2_slot(5mm,12mm)_centers(12mm,28mm)
 ```
 
 This custom right triangular flat corner plate has one capsule-shaped fixing
 slot parallel to each perpendicular edge. No supplier series is implied.
-The shape and two-slot layout are fixed identities; other shapes or slot counts
-are rejected. Unequal triangle width and height are supported.
+The `rightTriangle` boolean defaults to `true`, and the two-slot layout is
+fixed. `righttriangle` is a value-free flag. Valued flags, old `shape(...)`
+tokens and `shape` properties are rejected. Unequal triangle width and height are supported.
 
 | Token | JSON property | Default |
 | --- | --- | --- |
 | `w`, `width` | `width` | 40 mm |
 | `h`, `height` | `height` | 40 mm |
 | `t`, `thickness` | `thickness` | 4 mm |
-| `shape(...)` | `shape` | `righttriangle` |
+| `righttriangle` | `rightTriangle` | `true` |
 | `slots`, `slotcount` | `slotCount` | 2 |
 | `slot(width,length)` | `slot` | [5 mm,12 mm] |
 | `centers(xDistance,yDistance)` | `centers` | [12 mm,28 mm] |

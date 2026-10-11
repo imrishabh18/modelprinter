@@ -18,7 +18,7 @@ const shape = {
   /** Additional radial dedendum beyond one module, in millimeters. */
   clearance: nonnegative.default(0.25),
   boreDiameter: nonnegative.default(0),
-  handedness: z.enum(["right", "left"]).default("right"),
+  leftHanded: z.boolean().default(false),
   /** Counterclockwise degrees about +Z, beginning at the Z=0 end. */
   phase: z.number().finite().default(0),
   radialSegments: z

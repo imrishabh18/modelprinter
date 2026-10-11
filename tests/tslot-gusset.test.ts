@@ -10,7 +10,7 @@ import {
 } from "../src"
 
 const example =
-  "tslotgusset_w40mm_h40mm_t4mm_shape(righttriangle)_slots2_slot(5mm,12mm)_centers(12mm,28mm)"
+  "tslotgusset_w40mm_h40mm_t4mm_righttriangle_slots2_slot(5mm,12mm)_centers(12mm,28mm)"
 
 test("T-slot gusset roadmap example resolves every shape and layout token", () => {
   const model = mp.string(example).json()
@@ -20,7 +20,7 @@ test("T-slot gusset roadmap example resolves every shape and layout token", () =
     width: 40,
     height: 40,
     thickness: 4,
-    shape: "righttriangle",
+    rightTriangle: true,
     slotCount: 2,
     slot: [5, 12],
     centers: [12, 28],
@@ -125,11 +125,44 @@ test("T-slot gusset parser rejects duplicates, tuple mistakes and unknown tokens
     "tslotgusset_slot(5mm,)",
     "tslotgusset_centers((12mm,28mm))",
     "tslotgusset_shape(righttriangle,righttriangle)",
-    "tslotgusset_shape(righttriangle)_shape(righttriangle)",
+    "tslotgusset_righttriangle_righttriangle",
     "tslotgusset_centers(12mm,28mm",
     "tslotgusset_t",
     "tslotgusset_unknown1mm",
     "tslotgusset__w40mm",
   ])
     expect(() => parseModelString(value)).toThrow()
+})
+
+test("tslotgusset uses a direct boolean flag and rejects legacy selectors", () => {
+  const base = "tslotgusset"
+  const omitted = mp.string(base).json()
+  if (omitted.fn !== "tslotgusset") throw new Error("Unexpected model")
+  expect(omitted.rightTriangle).toBe(true)
+  expect(omitted).not.toHaveProperty("shape")
+  expect(mp.string(base + "_righttriangle").json()).toEqual(omitted)
+  expect(mp.string((base + "_righttriangle").toUpperCase()).json()).toEqual(
+    omitted,
+  )
+  expect(mp.string(base + "_righttriangle").params()).toMatchObject({
+    righttriangle: true,
+    string: base + "_righttriangle",
+  })
+  for (const suffix of [
+    "righttriangle_righttriangle",
+    "righttriangle1",
+    "righttriangle(true)",
+    "righttriangle(false)",
+    "shape(righttriangle)",
+    "shape(unsupported)",
+  ])
+    expect(() => mp.string(base + "_" + suffix).json()).toThrow()
+  const { fn, ...props } = omitted
+  for (const value of [false, "true", 1, null])
+    expect(() =>
+      tSlotGussetModelPropsSchema.parse({ ...props, rightTriangle: value }),
+    ).toThrow()
+  expect(() =>
+    tSlotGussetModelPropsSchema.parse({ ...props, shape: "righttriangle" }),
+  ).toThrow()
 })

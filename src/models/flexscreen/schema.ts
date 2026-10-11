@@ -10,15 +10,6 @@ export {
   nonnegativeModelLengthSchema,
 } from "../../model-length-schema"
 
-export const flexScreenOrientationSchema = z.enum([
-  "sitsFlat",
-  "sitsFlatBelowBoard",
-  "foldedToFaceAboveBoard",
-  "foldedToFaceBelowBoard",
-  "foldedToRightAngleAboveBoard",
-  "foldedToRightAngleBelowBoard",
-])
-
 const positiveFiniteNumberSchema = z.number().finite().positive()
 
 const aspectRatioStringSchema = z
@@ -78,7 +69,6 @@ const flexScreenModelPropsShape = {
   ratio: flexScreenAspectRatioSchema.optional(),
   defaultDiagonal: positiveModelLengthSchema.optional(),
 
-  orientation: flexScreenOrientationSchema.optional(),
   sitsFlat: z.boolean().optional(),
   sitsFlatBelowBoard: z.boolean().optional(),
   foldedToFaceAboveBoard: z.boolean().optional(),
@@ -151,12 +141,60 @@ const flexScreenModelPropsShape = {
 
 const addOrientationShortcutIssue = (
   props: Record<string, unknown>,
-  addIssue: (path: string) => void,
+  addIssue: (path: string, message: string) => void,
 ) => {
   const selectedShortcuts = orientationShortcutKeys.filter(
     (key) => props[key] === true,
   )
-  if (selectedShortcuts.length > 1) addIssue(selectedShortcuts[1]!)
+  if (selectedShortcuts.length > 1) {
+    addIssue(
+      selectedShortcuts[1]!,
+      "Only one FlexScreen orientation shortcut can be true",
+    )
+  } else if (
+    selectedShortcuts.length === 0 &&
+    orientationShortcutKeys.some((key) => props[key] !== undefined)
+  ) {
+    addIssue(
+      "sitsFlat",
+      "A FlexScreen orientation flag must be true when placement flags are supplied",
+    )
+  }
+}
+
+type OrientationFlags = Partial<
+  Record<(typeof orientationShortcutKeys)[number], boolean>
+>
+
+const normalizeOrientationFlags = <T extends OrientationFlags>(props: T) => {
+  const {
+    sitsFlat,
+    sitsFlatBelowBoard,
+    foldedToFaceAboveBoard,
+    foldedToFaceBelowBoard,
+    foldedToRightAngleAboveBoard,
+    foldedToRightAngleBelowBoard,
+    foldsAboveBoard,
+    foldsBelowBoard,
+    ...rest
+  } = props
+  const above = foldedToFaceAboveBoard === true || foldsAboveBoard === true
+  const below = foldedToFaceBelowBoard === true || foldsBelowBoard === true
+  const selected =
+    sitsFlatBelowBoard === true ||
+    above ||
+    below ||
+    foldedToRightAngleAboveBoard === true ||
+    foldedToRightAngleBelowBoard === true
+  return {
+    ...rest,
+    sitsFlat: sitsFlat === true || !selected,
+    sitsFlatBelowBoard: sitsFlatBelowBoard === true,
+    foldedToFaceAboveBoard: above,
+    foldedToFaceBelowBoard: below,
+    foldedToRightAngleAboveBoard: foldedToRightAngleAboveBoard === true,
+    foldedToRightAngleBelowBoard: foldedToRightAngleBelowBoard === true,
+  }
 }
 
 const validateTailLengths = (
@@ -200,16 +238,16 @@ export const flexScreenModelPropsSchema = z
   .strict()
   .superRefine((props, context) => {
     validateTailLengths(props, context)
-    addOrientationShortcutIssue(props, (path) => {
+    addOrientationShortcutIssue(props, (path, message) => {
       context.addIssue({
         code: "custom",
-        message: "Only one FlexScreen orientation shortcut can be true",
+        message,
         path: [path],
       })
     })
   })
+  .transform(normalizeOrientationFlags)
 
-export type FlexScreenOrientation = z.infer<typeof flexScreenOrientationSchema>
 export type FlexScreenAspectRatio = z.infer<typeof flexScreenAspectRatioSchema>
 export type FlexScreenModelPropsInput = z.input<
   typeof flexScreenModelPropsSchema
@@ -224,14 +262,15 @@ export const flexScreenModelDefinitionSchema = z
   .strict()
   .superRefine((model, context) => {
     validateTailLengths(model, context)
-    addOrientationShortcutIssue(model, (path) => {
+    addOrientationShortcutIssue(model, (path, message) => {
       context.addIssue({
         code: "custom",
-        message: "Only one FlexScreen orientation shortcut can be true",
+        message,
         path: [path],
       })
     })
   })
+  .transform(normalizeOrientationFlags)
 
 export type FlexScreenModelDefinition = z.infer<
   typeof flexScreenModelDefinitionSchema

@@ -5,7 +5,10 @@ Use a pin count after the model name and the usual `p` pitch token:
 ```ts
 mp.string("flexscreen30_w16_h10_flex5_p0.5mm_sitsflat").json()
 // { fn: "flexscreen", pinCount: 30, pitch: 0.5,
-//   width: 16, height: 10, flexCableLength: 5, orientation: "sitsFlat" }
+//   width: 16, height: 10, flexCableLength: 5, sitsFlat: true,
+//   sitsFlatBelowBoard: false, foldedToFaceAboveBoard: false,
+//   foldedToFaceBelowBoard: false, foldedToRightAngleAboveBoard: false,
+//   foldedToRightAngleBelowBoard: false }
 ```
 
 The connector-facing properties match jscad-electronics' `FPC` component:
@@ -42,3 +45,26 @@ Existing `conductorCount`, `conductorPitch`, `conductorWidth`, and
 `exposedContactLength` props and their long model-string tokens remain
 supported as compatibility aliases. The FPC-style props take precedence
 when both names are supplied.
+
+Placement uses boolean flags. Every parsed definition resolves all six flags,
+with exactly one true. If placement is omitted, `sitsFlat` is true.
+
+| Bare model-string flag | Canonical property |
+| --- | --- |
+| `sitsflat` | `sitsFlat` |
+| `sitsflatbelowboard` | `sitsFlatBelowBoard` |
+| `foldedtofaceaboveboard` | `foldedToFaceAboveBoard` |
+| `foldedtofacebelowboard` | `foldedToFaceBelowBoard` |
+| `foldedtorightangleaboveboard` | `foldedToRightAngleAboveBoard` |
+| `foldedtorightanglebelowboard` | `foldedToRightAngleBelowBoard` |
+
+The shorter bare flags `sitsflatbelow`, `foldsabove`, `foldsaboveboard`,
+`foldsbelow`, `foldsbelowboard`, `rightangleabove`, `rightangleaboveboard`,
+`rightanglebelow`, and `rightanglebelowboard` select the same corresponding
+canonical flag. JSON aliases `foldsAboveBoard` and `foldsBelowBoard` normalize
+to `foldedToFaceAboveBoard` and `foldedToFaceBelowBoard`.
+
+Supply exactly one true placement flag if any placement flags are supplied.
+Repeating a flag or its alias in a model string is rejected. Flags accept no
+values. The legacy `orientation` JSON field and `orientation(...)` selectors
+are rejected. Dimensions, ratios, rotations, and color names remain values.

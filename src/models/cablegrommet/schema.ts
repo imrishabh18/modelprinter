@@ -21,7 +21,7 @@ const shape = {
   grooveWidth: length,
   /** Radial recess from the flange outside diameter. */
   grooveDepth: length,
-  shape: z.literal("symmetricring").default("symmetricring"),
+  symmetricRing: z.literal(true).default(true),
 }
 
 type ResolvedProps = z.output<z.ZodObject<typeof shape>>

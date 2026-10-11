@@ -13,14 +13,13 @@ import { ModelRegistry } from "../src/model-registry"
 import { parseModelStringParams } from "../src/parse-model-string"
 import { register } from "../src/models/balltransferunit/register"
 
-test("balltransferunit roadmap and flag strings resolve to the complete contract", () => {
+test("balltransferunit default and flag strings resolve to the complete contract", () => {
   const expected: BallTransferUnitModelDefinition = {
     fn: "balltransferunit",
     ...ballTransferUnitDefaults,
   }
   for (const source of [
     "balltransferunit",
-    "balltransferunit_balld25mm_flangeod45mm_h30mm_mount(face3hole)_pcd36mm_holed4mm",
     "balltransferunit_balld25mm_flangeod45mm_h30mm_face3hole_pcd36mm_holed4mm",
     "BALLTRANSFERUNIT_BALLDIAMETER2.5CM_BODYDIAMETER3.1CM_HEIGHT3CM_BALLPROTRUSION7.5MM_FLANGEDIAMETER4.5CM_FLANGETHICKNESS3MM_PITCHCIRCLEDIAMETER3.6CM_HOLEDIAMETER4MM_SOCKETCLEARANCE0.25MM_FACE3HOLE",
   ]) {

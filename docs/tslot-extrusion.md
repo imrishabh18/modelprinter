@@ -1,7 +1,7 @@
 # T-slot extrusion
 
 ```text
-tslotextrusion_w20mm_h20mm_l100mm_profile(fourtsolid)_slot6mm_pocket10mm_pocketd2mm_lip2mm_bore4mm_corner1mm
+tslotextrusion_w20mm_h20mm_l100mm_fourtsolid_slot6mm_pocket10mm_pocketd2mm_lip2mm_bore4mm_corner1mm
 ```
 
 `fourtsolid` is an explicitly dimensioned custom solid rectangular extrusion,
@@ -14,7 +14,7 @@ The square roadmap example is one instance; unequal width and height are allowed
 | `w`, `width` | `width` | 20 |
 | `h`, `height` | `height` | 20 |
 | `l`, `length` | `length` | 100 |
-| `profile(...)` | `profile` | `fourtsolid` |
+| `fourtsolid` | `fourTSolid` | `true` |
 | `slot`, `slotwidth` | `slotWidth` | 6 |
 | `pocket`, `pocketwidth` | `pocketWidth` | 10 |
 | `pocketd`, `pocketdepth` | `pocketDepth` | 2 |
@@ -38,8 +38,9 @@ implied. Every omitted fitting feature is fixed by this contract.
 
 Lengths accept finite numbers in millimeters or complete strings with supported
 units (`mm`, `cm`, `m`, `in`, `inch`, `mil`, `ft`, `feet`), normalized to mm.
-Parameters cannot repeat, including aliases. Unknown tokens and profile names
-are errors. Direct props and definitions are strict schemas with the same rules.
+Parameters cannot repeat, including aliases. Unknown tokens, repeated flags and valued flags
+are errors. `fourTSolid` defaults to `true`; old `profile(...)` tokens and
+`profile` properties are rejected. Direct props and definitions are strict schemas with the same rules.
 The pocket must be wider than the opening; adjacent pockets, the bore, and the
 outside corner regions must retain positive separating material. The corner
 region check conservatively reserves `cornerRadius` beside each pocket.

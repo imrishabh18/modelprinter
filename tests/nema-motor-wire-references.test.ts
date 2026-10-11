@@ -6,13 +6,17 @@ import {
 } from "../src"
 
 test("NEMA references follow dimensions and wire angles independently of visibility", () => {
-  for (const wireConnection of ["none", "stubs", "jst-ph-6"] as const) {
+  for (const termination of [
+    { noWires: true },
+    { wireStubs: true },
+    { wireConnection: "jst-ph-6" },
+  ] as const) {
     const p = nemaMotorModelPropsSchema.parse({
       nemaSize: 17,
       bodyLength: 48,
       shaftLength: 30,
       wireSideAngle: 90,
-      wireConnection,
+      ...termination,
     })
     const refs = getNemaMotorReferencePoints(p)
     expect(refs.backface.position).toEqual({ x: 0, y: 0, z: -48 })
@@ -40,13 +44,15 @@ test("wire model strings parse, normalize and reject conflicting/invalid paramet
       "nema17_wirestubs_wirecount6_wirelength8mm_wirediameter1mm",
     ),
   ).toMatchObject({
-    wireConnection: "stubs",
+    wireStubs: true,
+    noWires: false,
     wireCount: 6,
     wireLength: 8,
     wireDiameter: 1,
   })
   expect(parseModelString("nema17_nowires")).toMatchObject({
-    wireConnection: "none",
+    noWires: true,
+    wireStubs: false,
   })
   for (const model of [
     "nema17_jstph1",

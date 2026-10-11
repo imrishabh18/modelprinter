@@ -8,7 +8,7 @@ const shape = {
   width: positive.default(20),
   height: positive.default(20),
   length: positive.default(100),
-  profile: z.literal("fourtsolid").default("fourtsolid"),
+  fourTSolid: z.literal(true).default(true),
   slotWidth: positive.default(6),
   pocketWidth: positive.default(10),
   pocketDepth: positive.default(2),

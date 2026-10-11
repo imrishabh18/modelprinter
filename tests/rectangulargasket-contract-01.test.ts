@@ -21,11 +21,7 @@ test("rectangulargasket complete strings and public dimensions agree", () => {
       .json(),
   ).toEqual({ fn: "rectangulargasket", ...props })
   expect(
-    mp
-      .string(
-        "rectangulargasket_w80mm_h50mm_border5mm_t2mm_profile(flatframe)_cornerr5mm",
-      )
-      .json(),
+    mp.string("rectangulargasket_w80mm_h50mm_border5mm_t2mm_cornerr5mm").json(),
   ).toEqual({ fn: "rectangulargasket", ...props })
   expect(rectangularGasketModelPropsSchema.parse(props)).toEqual(props)
   expect(getRectangularGasketDimensions(props).size).toEqual([80, 50, 2])

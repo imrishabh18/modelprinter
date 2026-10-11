@@ -8,9 +8,10 @@ sheetmetal_angle_w24mm_l20mm_h16mm_t1.2mm_r2mm_hole1(r3mm_bottomface_leftofcente
 
 `w` is sheet width, `l` is straight base length, `h` is straight flange height,
 `t` is thickness, and the outer `r` is inside bend radius. Straight lengths
-exclude the curved bends. Profiles are `plate`, `angle` (one 90-degree upright),
-and `channel` (two 90-degree uprights). This is formed geometry, not a flat
-pattern or bend-allowance calculation.
+exclude the curved bends. The value-free flags are `plate`, `angle` (one
+90-degree upright), and `channel` (two 90-degree uprights). Omitting them selects
+`plate`; repeated flags or multiple form choices are rejected. This is formed
+geometry, not a flat pattern or bend-allowance calculation.
 
 ## Features
 
@@ -50,6 +51,10 @@ and malformed parentheses are rejected when parsing. Geometry generation in jsca
 rejects cutouts touching/crossing an edge or bend tangent and overlapping cutout
 bounding boxes (a conservative restriction).
 
-The parser compiles this language to the parameter schema's `panel`, `u`, and `v`
-coordinates. Application examples and visual snapshots should use complete model
-strings rather than duplicating those internal coordinates.
+The parser compiles this language to boolean `round`/`slot` flags and the
+parameter schema's `panel`, `u`, and `v` coordinates. JSON inputs use the boolean
+`plate`/`angle`/`channel` flags and exactly one true `round`/`slot` flag per cutout.
+The former string selectors `profile` and `shape` are rejected. Panel labels
+`base`/`left`/`right` and slot axes `u`/`v` remain coordinate identifiers.
+Application examples and visual snapshots should use complete model strings
+rather than duplicating those internal coordinates.

@@ -74,10 +74,10 @@ const shape = {
   metricSize: buttonScrewMetricSizeSchema,
   /** Under-head length; this family supports short fully threaded screws only. */
   length,
-  drive: z.literal("hexsocket").default("hexsocket"),
-  thread: z.literal("full").default("full"),
+  hexSocket: z.literal(true).default(true),
+  fullThread: z.literal(true).default(true),
   threadPitch: length.optional(),
-  threadHand: z.literal("right").default("right"),
+  leftHanded: z.literal(false).default(false),
   threadClass: z.literal("6g").default("6g"),
   showThreads: z.boolean().default(true),
 }

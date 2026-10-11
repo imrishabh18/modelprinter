@@ -2,11 +2,19 @@ import {
   flexScreenModelDefinitionSchema,
   type FlexScreenModelDefinition,
   type FlexScreenModelProps,
-  type FlexScreenOrientation,
 } from "./models/flexscreen/schema"
 import type { RawModelprinterParams } from "./parse-model-string"
+import { splitModelStringTokens } from "./split-model-string-tokens"
 
-const orientationTokens: Record<string, FlexScreenOrientation> = {
+type OrientationFlag =
+  | "sitsFlat"
+  | "sitsFlatBelowBoard"
+  | "foldedToFaceAboveBoard"
+  | "foldedToFaceBelowBoard"
+  | "foldedToRightAngleAboveBoard"
+  | "foldedToRightAngleBelowBoard"
+
+const orientationTokens: Record<string, OrientationFlag> = {
   sitsflat: "sitsFlat",
   sitsflatbelow: "sitsFlatBelowBoard",
   sitsflatbelowboard: "sitsFlatBelowBoard",
@@ -148,7 +156,28 @@ export const parseFlexScreenModelParams = (
   }
 
   const props: Record<string, unknown> = {}
-  let orientation: FlexScreenOrientation | undefined
+  let orientation: OrientationFlag | undefined
+  // Raw parameter objects collapse repeated tokens; inspect the original string
+  // to reject repeated canonical flags and their aliases before that collapse.
+  for (const part of splitModelStringTokens(rawParams.string).slice(1)) {
+    const match = part.match(/^([a-zA-Z]+)(.*)$/)
+    if (!match) continue
+    const token = match[1]!.toLowerCase()
+    const selected = orientationTokens[token]
+    if (!selected) continue
+    if (match[2] !== "") {
+      throw new Error(`FlexScreen token "${token}" does not accept a value`)
+    }
+    if (orientation !== undefined) {
+      throw new Error(
+        orientation === selected
+          ? `Duplicate FlexScreen orientation flag "${token}"`
+          : "A FlexScreen model string can only set one orientation",
+      )
+    }
+    orientation = selected
+    props[selected] = true
+  }
   let relativeDistance: unknown
 
   for (const [token, value] of Object.entries(rawParams)) {
@@ -159,13 +188,6 @@ export const parseFlexScreenModelParams = (
     const tokenOrientation = orientationTokens[token]
     if (tokenOrientation) {
       assertBareToken(value, token)
-      if (orientation && orientation !== tokenOrientation) {
-        throw new Error(
-          "A FlexScreen model string can only set one orientation",
-        )
-      }
-      orientation = tokenOrientation
-      props.orientation = tokenOrientation
       continue
     }
 

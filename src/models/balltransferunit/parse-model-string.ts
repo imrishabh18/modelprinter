@@ -32,7 +32,7 @@ export function parseBallTransferUnitModelParams(raw: RawModelprinterParams) {
     const lower = token.toLowerCase()
     let property: string
     let value: unknown
-    if (lower === "face3hole" || lower === "mount(face3hole)") {
+    if (lower === "face3hole") {
       property = "faceThreeHole"
       value = true
     } else {

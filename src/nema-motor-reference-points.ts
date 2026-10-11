@@ -22,7 +22,7 @@ export function getNemaMotorReferencePoints(input: NemaMotorModelPropsInput) {
     p.bodyWidth / 2 / Math.max(Math.abs(x), Math.abs(y)),
     (p.bodyWidth - p.faceCornerChamfer) / (Math.abs(x) + Math.abs(y)),
   )
-  if (p.nemaSize === 34 && p.cornerProfile === "stepped") {
+  if (p.nemaSize === 34 && p.stepped) {
     const h = p.bodyWidth / 2,
       c = p.bodyCornerChamfer / Math.SQRT2,
       r = Math.min(4, c / 4)
@@ -77,24 +77,19 @@ export function getNemaMotorReferencePoints(input: NemaMotorModelPropsInput) {
       },
       direction: { x, y, z: 0 },
     },
-    shaftflat:
-      p.shaftShape === "d"
-        ? {
-            position: {
-              x:
-                (p.shaftDiameter / 2 - p.shaftFlatDepth) *
-                Math.cos(flatRadians),
-              y:
-                (p.shaftDiameter / 2 - p.shaftFlatDepth) *
-                Math.sin(flatRadians),
-              z: p.shaftLength - p.shaftFlatLength / 2,
-            },
-            direction: {
-              x: Math.cos(flatRadians),
-              y: Math.sin(flatRadians),
-              z: 0,
-            },
-          }
-        : undefined,
+    shaftflat: p.dShaft
+      ? {
+          position: {
+            x: (p.shaftDiameter / 2 - p.shaftFlatDepth) * Math.cos(flatRadians),
+            y: (p.shaftDiameter / 2 - p.shaftFlatDepth) * Math.sin(flatRadians),
+            z: p.shaftLength - p.shaftFlatLength / 2,
+          },
+          direction: {
+            x: Math.cos(flatRadians),
+            y: Math.sin(flatRadians),
+            z: 0,
+          },
+        }
+      : undefined,
   } satisfies Record<string, NemaMotorReferencePoint | undefined>
 }

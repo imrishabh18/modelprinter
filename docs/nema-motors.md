@@ -44,6 +44,12 @@ Modifiers: `l` / `length` / `bodylength`, `bodywidth`, `shaftlength`,
 `holespacing`, `holediameter`, `holedepth`, `throughholes` / `blindholes`,
 `pilotdiameter`, `pilotlength`, `frontcap`, `rearcap`, `facechamfer`, `bodychamfer`, `rearchamfer`, `stepped` / `chamfered`.
 Duplicate, unknown and geometrically invalid parameters fail validation.
+Direct props use mutually exclusive `roundShaft` / `dShaft` and
+`chamfered` / `stepped` booleans. Each resolved group contains one true flag
+and false for its other flags. Explicit groups must select exactly one true flag.
+`_roundshaft` and `_backfaceplain` also match their prop names; `_round` and
+`_plainbackface` remain value-free flag spellings. Enum properties `shaftShape`,
+`backFace` and `cornerProfile`, and value-bearing selector tokens, are rejected.
 
 This package defines parameters and parses model strings; it does not generate
 motor geometry. The corresponding components in jscad-electronics build the
@@ -54,7 +60,9 @@ JSCAD solids and own the visual snapshots and geometry tests.
 The rear face is Z=-bodyLength. NEMA8/17/23 model strings show four installed socket-head
 cap screws; NEMA34 defaults to a plain rear casting. `_backfaceholes` removes the screws and exposes four blind bores;
 `_backfacescrews` explicitly selects installed screws. `_plainbackface` omits both.
-These flags are mutually exclusive. Direct props use `backFace: "holes" | "screws" | "plain"`.
+These flags are mutually exclusive. Direct props use `backFaceHoles`,
+`backFaceScrews` or `backFacePlain` booleans. Resolved definitions contain exactly
+one true flag and false for the other rear-face flags.
 
 Rear fasteners are representative configurable details, not guaranteed by a NEMA
 frame number. The square rear pitches default to 16 / 31 / 47.14 / 40 mm,
@@ -67,7 +75,7 @@ default exit angle, 2 mm wires, and 25 mm visible length. Threads, laminations,
 and the shaft keyway are omitted.
 
 These visual details are photo-based approximations, not manufacturing dimensions.
-`cornerProfile` (`stepped` / `chamfered`) and `rearCornerChamfer` / `rearchamfer`
+`stepped` / `chamfered` booleans and `rearCornerChamfer` / `rearchamfer`
 configure the profiles. In stepped mode, the chamfer value divided by sqrt(2)
 sets the corner shoulder depth, with fillets up to 4 mm. Default body and rear
 values are both 24 mm. Rear bores/screws remain opt-in with an illustrative
@@ -104,5 +112,9 @@ and `nema17_jstsh4` produce the same definition.
 Resolved definitions retain the existing `jst-family-N` spelling; existing
 PH definitions and dimensions are preserved. Header dimensions vary with
 family and pin count, and headers that cannot fit on the motor are rejected.
-`none` / `stubs` remain aliases for `nowires` / `wirestubs`. Duplicate,
+`none` / `stubs` remain value-free aliases for `nowires` / `wirestubs`.
+Direct props use `noWires` or `wireStubs` booleans, with visible stubs by default.
+`wireConnection` accepts only JST catalog identifiers; it cannot be combined with
+a true `noWires` or `wireStubs` flag. Resolved wire booleans are both false for
+JST terminations, and `wireConnection` is omitted for no-wire and stub choices. Duplicate,
 unsupported, and out-of-range connections still fail validation.

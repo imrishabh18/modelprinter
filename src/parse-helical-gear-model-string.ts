@@ -31,7 +31,7 @@ export function parseHelicalGearModelParams(raw: RawModelprinterParams) {
     const [name, value] = parseGearToken(token)
     let property: string
     let parsed: unknown
-    if (name in lengths) {
+    if (Object.hasOwn(lengths, name)) {
       property = lengths[name as keyof typeof lengths]
       parsed = value
     } else if (
@@ -63,8 +63,8 @@ export function parseHelicalGearModelParams(raw: RawModelprinterParams) {
     } else if (name === "right" || name === "left") {
       if (value)
         throw new Error(`Helical flag "${name}" does not accept a value`)
-      property = "handedness"
-      parsed = name
+      property = "leftHanded"
+      parsed = name === "left"
     } else throw new Error(`Unknown helical gear token "${token}"`)
     if (property in props)
       throw new Error(

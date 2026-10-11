@@ -8,7 +8,7 @@ import {
   mp,
 } from "../../src"
 
-const example = "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4"
+const example = "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4"
 const props = {
   boreDiameter: 8,
   outerDiameter: 16,
@@ -25,9 +25,9 @@ export function assertShaftCollarContract() {
     outerDiameter: 16,
     width: 8,
     metricSize: "M4",
-    mount: "setscrew",
+    setScrew: true,
     threadPitch: 0.7,
-    threadHand: "right",
+    leftHanded: false,
     threadClass: "6H",
     screwZ: 4,
     screwAngle: 0,
@@ -42,7 +42,7 @@ export function assertShaftCollarContract() {
   expect(shaftCollarModelDefinitionSchema.parse(model)).toEqual(model)
   expect(modelDefinitionSchema.parse(model)).toEqual(model)
   expect(
-    mp.string("SHAFTCOLLAR_BORE0.8CM_OD1.6CM_W0.8CM_MOUNT(SETSCREW)_M4").json(),
+    mp.string("SHAFTCOLLAR_BORE0.8CM_OD1.6CM_W0.8CM_setscrew_M4").json(),
   ).toEqual(model)
   expect(
     shaftCollarModelPropsSchema.parse({
@@ -51,10 +51,8 @@ export function assertShaftCollarContract() {
     }).boreDiameter,
   ).toBeCloseTo(8)
   expect(
-    mp
-      .string(example + "_threadpitch0.5mm_threadhand(left)_threadclass(6H)")
-      .json(),
-  ).toMatchObject({ threadPitch: 0.5, threadHand: "left", threadClass: "6H" })
+    mp.string(example + "_threadpitch0.5mm_lefthanded_threadclass(6H)").json(),
+  ).toMatchObject({ threadPitch: 0.5, leftHanded: true, threadClass: "6H" })
   expect(
     shaftCollarModelPropsSchema.parse({ ...props, metricSize: "M2.5" })
       .threadPitch,
@@ -69,7 +67,7 @@ export function assertShaftCollarLayout() {
     direction: [-1, -0, 0],
     diameter: 4,
     threadPitch: 0.7,
-    threadHand: "right",
+    leftHanded: false,
     threadGender: "female",
     threadClass: "6H",
   })
@@ -94,33 +92,58 @@ export function assertShaftCollarLayout() {
 }
 
 export function assertShaftCollarValidation() {
+  const source = "shaftcollar_" + "bore8mm_od16mm_w8mm_m4"
+  for (const token of [
+    "mount(setscrew)",
+    "threadhand(left)",
+    "threadhand(right)",
+    "setscrew_setscrew",
+    "lefthanded_righthanded",
+    "righthanded_lefthanded",
+    "lefthanded_lefthanded",
+    "righthanded_righthanded",
+    "setscrew(true)",
+    "lefthanded(true)",
+  ])
+    expect(() => mp.string(source + "_" + token).json()).toThrow()
+  expect(mp.string(source + "_righthanded").json()).toMatchObject({
+    leftHanded: false,
+  })
+  expect(mp.string(source + "_lefthanded").json()).toMatchObject({
+    leftHanded: true,
+  })
+  for (const legacy of [{ mount: "setscrew" }, { threadHand: "left" }])
+    expect(() =>
+      shaftCollarModelPropsSchema.parse({ ...props, ...legacy }),
+    ).toThrow()
+
   for (const source of [
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_typo1mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_bore9mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_m3",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_mount(unknown)",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_threadpitch4mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_threadhand(opposed)",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_threadclass(6g)",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_threadpitch0mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_threadpitch0.7oops",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_threadpitch1e-3mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_mountsetscrew",
-    "shaftcollar_bore_od16mm_w8mm_mount(setscrew)_m4",
-    "shaftcollar_bore0mm_od16mm_w8mm_mount(setscrew)_m4",
-    "shaftcollar_bore20mm_od16mm_w8mm_mount(setscrew)_m4",
-    "shaftcollar_bore8mmoops_od16mm_w8mm_mount(setscrew)_m4",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m7",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_threadpitch(0.7mm)",
-    "shaftcollar(custom)_bore8mm_od16mm_w8mm_mount(setscrew)_m4",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_typo1mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_bore9mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_m3",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_mount(unknown)",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_threadpitch4mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_threadhand(opposed)",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_threadclass(6g)",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_threadpitch0mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_threadpitch0.7oops",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_threadpitch1e-3mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_mountsetscrew",
+    "shaftcollar_bore_od16mm_w8mm_setscrew_m4",
+    "shaftcollar_bore0mm_od16mm_w8mm_setscrew_m4",
+    "shaftcollar_bore20mm_od16mm_w8mm_setscrew_m4",
+    "shaftcollar_bore8mmoops_od16mm_w8mm_setscrew_m4",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m7",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_threadpitch(0.7mm)",
+    "shaftcollar(custom)_bore8mm_od16mm_w8mm_setscrew_m4",
     "shaftcollar",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_width9mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_screwz1mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_screwz7mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_chamfer2mm",
-    "shaftcollar_bore8mm_od16mm_w8mm_mount(setscrew)_m4_screwangle90rad",
-    "shaftcollar_bore8mm_od16mm_w4mm_mount(setscrew)_m4",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_width9mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_screwz1mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_screwz7mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_chamfer2mm",
+    "shaftcollar_bore8mm_od16mm_w8mm_setscrew_m4_screwangle90rad",
+    "shaftcollar_bore8mm_od16mm_w4mm_setscrew_m4",
   ])
     expect(() => mp.string(source).json()).toThrow()
   for (const boreDiameter of [

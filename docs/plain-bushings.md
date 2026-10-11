@@ -8,7 +8,7 @@ rolling elements, a slit, a flange, fits, or manufacturing tolerances.
 ```ts
 import { getPlainBushingDimensions, mp, plainBushingModelPropsSchema } from "@tscircuit/modelprinter"
 
-mp.string("plainbushing_id8mm_od12mm_l20mm_style(plainclosed)_edgechamfer0.5mm").json()
+mp.string("plainbushing_id8mm_od12mm_l20mm_plainclosed_edgechamfer0.5mm").json()
 plainBushingModelPropsSchema.parse({ innerDiameter: "8mm", outerDiameter: "12mm", length: "2cm" })
 getPlainBushingDimensions({ innerDiameter: 8, outerDiameter: 12, length: 20, edgeChamfer: 0.5 })
 ```
@@ -18,13 +18,15 @@ getPlainBushingDimensions({ innerDiameter: 8, outerDiameter: 12, length: 20, edg
 | `innerDiameter` | Required | `id`, `innerdiameter` | Positive through-bore diameter |
 | `outerDiameter` | Required | `od`, `outerdiameter` | Outside sleeve diameter, greater than the bore |
 | `length` | Required | `l`, `length` | Overall end-plane distance, including chamfers |
-| `style` | `"plainclosed"` | `style(plainclosed)` | Continuous plain sleeve; other styles are rejected |
+| `plainClosed` | `true` | `plainclosed` | Continuous plain sleeve |
 | `edgeChamfer` | 0 mm | `edgechamfer` | Equal axial/radial setbacks of all four 45-degree inner/outer rim chamfers |
 
 Lengths accept finite numbers in millimeters or complete numeric strings with
 optional `mm`, `cm`, `m`, `in`, `inch`, `mil`, `ft`, or `feet` units. Outputs
-use millimeters. Token names and style values are case-insensitive; direct props
-use the casing shown above. Style tokens require parentheses. Unknown properties,
+use millimeters. Token names and flags are case-insensitive; direct props
+use the casing shown above. `plainclosed` is a value-free boolean flag. The
+`plainClosed` property defaults to `true`; old `style(...)` tokens and `style`
+properties are rejected. Unknown properties,
 duplicate tokens/aliases, empty tokens, and malformed lengths are rejected.
 
 The bore and sleeve are concentric with the Z axis. The first annular end face

@@ -3,7 +3,7 @@
 Implements roadmap #0002 from [issue #13](https://github.com/tscircuit/modelprinter/issues/13).
 
 ```ts
-mp.string("flatheadscrew_m3_l10mm_drive(hexsocket)").json()
+mp.string("flatheadscrew_m3_l10mm_hexsocket").json()
 ```
 
 The model defaults to **ISO10642:2019**, with M3, M4, M5 and M6 supported.
@@ -12,7 +12,7 @@ both forms normalize to `iso10642: true`. Legacy `standard(...)` selectors,
 other sizes/editions, drives, partial threading, thread classes other than 6g,
 and fine pitches are rejected. All normalized lengths are millimeters,
 angles are degrees, and the primary metric thread is male, coarse and right-hand.
-`threadhand(left)` selects the same profile with opposite handedness.
+`lefthanded` selects the same profile with opposite handedness.
 
 The [source table](https://www.westfieldfasteners.co.uk/Standards/ScrewBolt-SHCsk-M.html)
 is pinned by edition and copied into the exported `flatHeadScrewDimensions` table.
@@ -36,8 +36,14 @@ d3 = d - 17H/12 root diameter. `showThreads: false` renders a smooth shank at
 the major diameter, retaining the same head, under-head blend, tip chamfer,
 length and thread identity.
 
-`mN` / `metricsize(mN)` and `l` / `length` are aliases. `drive(...)`, `thread(full)`, `threadhand(...)`, `threadclass(6g)` and
-`threadgender(male)` are selectors. `threads` / `nothreads` set visibility.
+`mN` / `metricsize(mN)` and `l` / `length` are aliases. `hexsocket`,
+`fullthread`, and `male` are value-free flags that directly set `hexSocket: true`,
+`fullThread: true`, and `male: true`; those fixed features default to true.
+`lefthanded` sets `leftHanded: true`, and `righthanded` restates its false default.
+Repeated or conflicting hand flags are rejected. `threadclass(6g)` preserves the
+ISO thread-class designation. `threads` / `nothreads` set visibility.
+The former `drive`, `thread`, `threadHand`, and `threadGender` schema properties
+and their selector tokens are rejected. Flags accept no values.
 Dimensional fields in the table can be repeated explicitly using their
 lowercase field names (for example `threadpitch0.5mm`), or supplied through the
 public schema. They must equal the pinned value; they cannot redefine the
