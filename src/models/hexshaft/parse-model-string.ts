@@ -11,9 +11,6 @@ const aliases: Record<string, string> = {
 const flags: Record<string, string> = {
   regularhex: "regularHex",
 }
-const literals: Record<string, readonly [string, string]> = {
-  profile: ["regularhex", "regularHex"],
-}
 export function parseHexShaftModelParams(raw: RawModelprinterParams) {
   const [name, ...tokens] = splitModelStringTokens(raw.string)
   if (raw.fn !== "hexshaft" || name?.toLowerCase() !== "hexshaft")
@@ -33,11 +30,6 @@ export function parseHexShaftModelParams(raw: RawModelprinterParams) {
     if (Object.hasOwn(flags, key)) {
       if (value !== "") throw new Error(`hexshaft flag "${key}" takes no value`)
       assign(flags[key]!, true)
-    } else if (Object.hasOwn(literals, key)) {
-      const [literal, property] = literals[key]!
-      if (value.toLowerCase() !== `(${literal})`)
-        throw new Error(`Expected hexshaft ${key}(${literal})`)
-      assign(property, true)
     } else if (Object.hasOwn(aliases, key) && value) {
       const property = aliases[key]!
       assign(property, property === "pinCount" ? Number(value) : value)

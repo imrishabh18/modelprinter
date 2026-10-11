@@ -5,7 +5,7 @@ import {
   hexShaftModelPropsSchema,
   getHexShaftDimensions,
 } from "../src"
-const source = "hexshaft_af12mm_l200mm_profile(regularhex)_endchamfer1mm"
+const source = "hexshaft_af12mm_l200mm_regularhex_endchamfer1mm"
 const props = {
   acrossFlats: 12,
   length: 200,

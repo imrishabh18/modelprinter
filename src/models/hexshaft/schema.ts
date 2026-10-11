@@ -62,7 +62,7 @@ export type HexShaftModelDefinition = z.output<
   typeof hexShaftModelDefinitionSchema
 >
 
-/** A regular hexagonal drive shaft with 45-degree chamfers on all six facets at each end. Length runs along the centered +Z axis from Z=0. acrossFlats measures the distance between the flats X=+-acrossFlats/2; vertices lie on the +/-Y axis. endChamfer offsets each flat inward by that amount over the same axial distance. _regularhex is the value-free profile flag; _profile(regularhex) is the roadmap alias. All normalized dimensions are millimeters. */
+/** A regular hexagonal drive shaft with 45-degree chamfers on all six facets at each end. Length runs along the centered +Z axis from Z=0. acrossFlats measures the distance between the flats X=+-acrossFlats/2; vertices lie on the +/-Y axis. endChamfer offsets each flat inward by that amount over the same axial distance. _regularhex is the value-free flag for the regular hexagonal geometry. All normalized dimensions are millimeters. */
 export function getHexShaftDimensions(input: HexShaftModelPropsInput) {
   const p = hexShaftModelPropsSchema.parse(input)
   return {
