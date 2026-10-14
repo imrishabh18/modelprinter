@@ -2,6 +2,7 @@ import {
   nemaMotorModelPropsSchema,
   type NemaMotorModelPropsInput,
 } from "./nema-motor-schema"
+import { isInsideNemaRearFace } from "./nema-motor-rear-profile"
 
 export interface NemaMotorReferencePoint {
   position: { x: number; y: number; z: number }
@@ -48,6 +49,16 @@ export function getNemaMotorReferencePoints(input: NemaMotorModelPropsInput) {
     for (let i = 0; i < 50; i++) {
       const mid = (low + high) / 2
       if (contains(mid)) low = mid
+      else high = mid
+    }
+    radius = low
+  }
+  if (p.nemaSize !== 34) {
+    let low = 0,
+      high = p.bodyWidth
+    for (let i = 0; i < 50; i++) {
+      const mid = (low + high) / 2
+      if (isInsideNemaRearFace(mid * x, mid * y, p)) low = mid
       else high = mid
     }
     radius = low
