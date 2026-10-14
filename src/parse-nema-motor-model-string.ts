@@ -27,6 +27,8 @@ const lengths = {
   rearcap: "rearCapLength",
   facechamfer: "faceCornerChamfer",
   bodychamfer: "bodyCornerChamfer",
+  bodyrecess: "bodyCornerRecessRadius",
+  bodyfillet: "bodyCornerFilletRadius",
   rearchamfer: "rearCornerChamfer",
   rearrecess: "rearCornerRecessRadius",
   rearfillet: "rearCornerFilletRadius",

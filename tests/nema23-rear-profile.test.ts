@@ -11,8 +11,11 @@ test("NEMA23 rear side tabs use a rectangular pattern independent of the front f
   expect(definition).toMatchObject({
     mountingHoleSpacing: 47.14,
     mountingHoleDiameter: 5,
-    bodyCornerChamfer: 15,
-    chamfered: true,
+    bodyCornerChamfer: 9 * Math.SQRT2,
+    bodyCornerRecessRadius: 5,
+    bodyCornerFilletRadius: 2.5,
+    stepped: true,
+    chamfered: false,
     rearStepped: true,
     rearChamfered: false,
     rearCornerRecessRadius: 5,
@@ -86,4 +89,38 @@ test("NEMA23 diagonal wire references stay on the curved rear cap in every rear 
     expect(getNemaMotorReferencePoints({ ...p, ...mode }).wireside).toEqual(
       wire,
     )
+})
+
+test("NEMA23 body arcs can be overridden without changing the rear or front flange", () => {
+  const source = "nema23_bodyrecess4mm_bodyfillet2mm"
+  const definition = mp.string(source).json()
+  expect(definition).toMatchObject({
+    bodyCornerRecessRadius: 4,
+    bodyCornerFilletRadius: 2,
+    rearCornerRecessRadius: 5,
+    rearCornerFilletRadius: 2.5,
+    mountingHoleSpacing: 47.14,
+  })
+  expect(modelDefinitionSchema.parse(definition)).toEqual(definition)
+  expect(
+    mp.string("nema23_chamfered_backholespacing47.14mm_backscrewm4").json(),
+  ).toMatchObject({
+    bodyCornerChamfer: 15,
+    chamfered: true,
+    rearChamfered: true,
+  })
+})
+
+test("curved body shoulders must clear the complete front through-hole radius", () => {
+  for (const source of [
+    "nema23_bodyrecess8mm",
+    "nema23_bodyfillet5mm",
+    "nema23_bodychamfer11mm",
+    "nema23_bodyrecess9mm_bodyfillet0mm",
+  ])
+    expect(() => mp.string(source).json()).toThrow()
+  expect(mp.string("nema23_bodyrecess6mm_bodyfillet2mm").json()).toMatchObject({
+    bodyCornerRecessRadius: 6,
+    bodyCornerFilletRadius: 2,
+  })
 })

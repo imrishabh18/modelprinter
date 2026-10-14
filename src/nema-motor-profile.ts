@@ -1,23 +1,23 @@
-/** Analytic rear-face clearance checks; no renderer or meshes are needed. */
-type RearProfile = {
-  bodyWidth: number
-  rearCornerChamfer?: number
-  rearStepped: boolean
-  rearCornerRecessRadius: number
-  rearCornerFilletRadius: number
+/** Analytic cap/core clearance checks; no renderer or meshes are needed. */
+type NemaProfile = {
+  width: number
+  chamfer: number
+  stepped: boolean
+  recessRadius: number
+  filletRadius: number
 }
 
-export function isInsideNemaRearFace(x: number, y: number, p: RearProfile) {
-  const h = p.bodyWidth / 2
+export function isInsideNemaFace(x: number, y: number, p: NemaProfile) {
+  const h = p.width / 2
   x = Math.abs(x)
   y = Math.abs(y)
   if (x > h || y > h) return false
-  const chamfer = p.rearCornerChamfer ?? 0
-  if (!p.rearStepped) return x + y <= 2 * h - chamfer
+  const chamfer = p.chamfer
+  if (!p.stepped) return x + y <= 2 * h - chamfer
   const c = chamfer / Math.SQRT2
   if (c === 0) return true
-  const recess = p.rearCornerRecessRadius
-  const fillet = p.rearCornerFilletRadius
+  const recess = p.recessRadius
+  const fillet = p.filletRadius
   const k = h - c + recess
   if (x > h - c && y > h - c)
     return x <= k && y <= k && Math.hypot(x - k, y - k) >= recess
@@ -63,28 +63,23 @@ const arcDistance = (
   )
 }
 
-/** Reject a bore/head that touches or crosses a straight edge or either kind of arc. */
-export function fitsNemaRearCircle(
-  x: number,
-  y: number,
-  radius: number,
-  p: RearProfile,
-) {
-  if (!isInsideNemaRearFace(x, y, p)) return false
-  const h = p.bodyWidth / 2
+const boundaryDistance = (x: number, y: number, p: NemaProfile) => {
+  const h = p.width / 2
   x = Math.abs(x)
   y = Math.abs(y)
-  const chamfer = p.rearCornerChamfer ?? 0
-  if (!p.rearStepped || chamfer === 0)
-    return (
-      Math.min(h - x, h - y, (2 * h - chamfer - x - y) / Math.SQRT2) > radius
+  const chamfer = p.chamfer
+  if (!p.stepped || chamfer === 0)
+    return Math.min(
+      Math.abs(h - x),
+      Math.abs(h - y),
+      Math.abs(2 * h - chamfer - x - y) / Math.SQRT2,
     )
   const c = chamfer / Math.SQRT2
-  const recess = p.rearCornerRecessRadius
-  const fillet = p.rearCornerFilletRadius
+  const recess = p.recessRadius
+  const fillet = p.filletRadius
   const a = h - c - fillet
   const k = h - c + recess
-  const distance = Math.min(
+  return Math.min(
     segmentDistance(x, y, -a, h, a, h),
     segmentDistance(x, y, h, -a, h, a),
     segmentDistance(x, y, h - c, h - fillet, h - c, k),
@@ -93,5 +88,24 @@ export function fitsNemaRearCircle(
     arcDistance(x, y, k, k, recess, Math.PI, (3 * Math.PI) / 2),
     arcDistance(x, y, h - fillet, a, fillet, 0, Math.PI / 2),
   )
-  return distance > radius
+}
+
+/** Reject a bore/head that touches or crosses a straight edge or either kind of arc. */
+export function fitsNemaCircle(
+  x: number,
+  y: number,
+  radius: number,
+  p: NemaProfile,
+) {
+  return isInsideNemaFace(x, y, p) && boundaryDistance(x, y, p) > radius
+}
+
+/** A through mounting bore must remain entirely outside the core profile. */
+export function clearsNemaCircle(
+  x: number,
+  y: number,
+  radius: number,
+  p: NemaProfile,
+) {
+  return !isInsideNemaFace(x, y, p) && boundaryDistance(x, y, p) > radius
 }
