@@ -82,32 +82,14 @@ configure the profiles. In stepped mode, the chamfer value divided by sqrt(2)
 sets the corner shoulder depth, with fillets up to 4 mm. Default body and rear
 values are both 24 mm. Rear bores/screws remain opt-in with an illustrative
 40 mm square pitch and can be overridden to match a specific motor.
-NEMA8/17 retain their existing profiles. NEMA23 defaults to matching stepped
-body and rear-cap profiles, with R5 concave recesses and R2.5 convex fillets,
-so the rear shoulders do not overhang the body. Its front 47.14 mm flange
-pattern remains unchanged. The rear shape and 50 × 32 mm side-tab pattern
-use [STEPPERONLINE’s ST-M10 rear adapter drawing](https://www.omc-stepperonline.com/image/catalog/dimensions/ST-M10_Dimension.svg)
-as a representative reference. The adapter itself is 56 × 56 mm with Ø4 clearance
-holes. The motor model retains its 56.4 mm envelope and uses illustrative M3
-socket screws/bores; the adapter drawing does not establish the motor's thread,
-screw style, or exact rear-cover radii. These are not universal NEMA23 dimensions.
+NEMA8/17 retain their existing profiles. NEMA23 uses matching curved body/rear
+profiles with 9 mm shoulders, R5 recesses and R2.5 fillets; front holes are unchanged.
 
-`bodyCornerRecessRadius` / `bodyCornerFilletRadius` (`bodyrecess` / `bodyfillet`)
-configure body arcs independently of the rear. The default NEMA23 body and rear
-shoulder depths are both 9 mm; other frames retain their existing body shapes.
-Arc radii must fit the shoulder, and the complete front through-hole radius must
-clear the body, including the concave recess.
-
-`rearStepped` / `_rearstepped` and `rearChamfered` / `_rearchamfered` select
-only the rear profile. Explicit `stepped` / `chamfered` still select both
-profiles unless a rear selector is supplied. `rearCornerChamfer` / `_rearchamfer`
-divided by sqrt(2) sets the stepped shoulder depth (9 mm for NEMA23).
-`rearCornerRecessRadius` / `_rearrecess` and `rearCornerFilletRadius` /
-`_rearfillet` set its independent arc radii; their sum must fit that shoulder.
-Validation checks bores and heads against the actual straight edges and arcs.
-Use `_chamfered_backholespacing47.14mm_backscrewm4` to request the previous
-NEMA23 body and rear depiction explicitly. Diagonal wire references follow the rear
-profile even when wires are hidden.
+`rearStepped` / `_rearstepped` and `rearChamfered` / `_rearchamfered` override the
+rear profile independently of `stepped` / `chamfered`. Body and rear arc radii
+use `bodyCornerRecessRadius`, `bodyCornerFilletRadius`, `rearCornerRecessRadius`
+and `rearCornerFilletRadius` (`bodyrecess`, `bodyfillet`, `rearrecess`, `rearfillet`).
+`nema23_chamfered_backholespacing47.14mm_backscrewm4` retains the previous depiction.
 
 | Rear default (mm) | NEMA8 | NEMA17 | NEMA23 | NEMA34 |
 | --- | --- | --- | --- | --- |
